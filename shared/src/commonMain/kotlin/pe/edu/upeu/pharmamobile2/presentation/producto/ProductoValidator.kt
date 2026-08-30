@@ -11,8 +11,8 @@ data class ResultadoValidacionProducto(
 object ProductoValidator {
 
     fun validarNombre(nombre: String): String? {
-        return if (nombre.isBlank()) {
-            "Ingrese nombre del producto"
+        return if (!nombre.isNotBlank()) {
+            "El nombre es obligatorio."
         } else {
             null
         }
@@ -20,37 +20,53 @@ object ProductoValidator {
 
     fun validarPrecio(precio: String): String? {
         val precioNumero = precio.toDoubleOrNull()
-        return if (precio.isBlank() || precioNumero == null || precioNumero <= 0.0) {
-            "Ingrese precio válido"
-        } else {
-            null
+        return when {
+            precioNumero == null -> "Ingrese un precio numérico."
+            precioNumero <= 0.0 -> "El precio debe ser mayor que cero."
+            else -> null
         }
     }
 
     fun validarStock(stock: String): String? {
         val stockNumero = stock.toIntOrNull()
         return when {
-            stock.isBlank() -> "Ingrese el stock"
-            stockNumero == null -> "Ingrese un stock entero válido"
-            stockNumero < 0 -> "El stock no puede ser negativo"
+            stockNumero == null -> "Ingrese un stock entero."
+            stockNumero < 0 -> "El stock no puede ser negativo."
             else -> null
         }
     }
 
     fun validar(nombre: String, precio: String, stock: String): ResultadoValidacionProducto {
-        val errorNombre = validarNombre(nombre)
-        val errorPrecio = validarPrecio(precio)
-        val errorStock = validarStock(stock)
+        val precioNumero = precio.toDoubleOrNull()
+        val stockNumero = stock.toIntOrNull()
 
-        val esValido = errorNombre == null && errorPrecio == null && errorStock == null
-        val primerError = errorNombre ?: errorPrecio ?: errorStock
-
-        return ResultadoValidacionProducto(
-            esValido = esValido,
-            errorNombre = errorNombre,
-            errorPrecio = errorPrecio,
-            errorStock = errorStock,
-            mensajeGeneral = primerError
-        )
+        return when {
+            !nombre.isNotBlank() -> ResultadoValidacionProducto(
+                esValido = false,
+                errorNombre = "El nombre es obligatorio.",
+                mensajeGeneral = "El nombre es obligatorio."
+            )
+            precioNumero == null -> ResultadoValidacionProducto(
+                esValido = false,
+                errorPrecio = "Ingrese un precio numérico.",
+                mensajeGeneral = "Ingrese un precio numérico."
+            )
+            precioNumero <= 0.0 -> ResultadoValidacionProducto(
+                esValido = false,
+                errorPrecio = "El precio debe ser mayor que cero.",
+                mensajeGeneral = "El precio debe ser mayor que cero."
+            )
+            stockNumero == null -> ResultadoValidacionProducto(
+                esValido = false,
+                errorStock = "Ingrese un stock entero.",
+                mensajeGeneral = "Ingrese un stock entero."
+            )
+            stockNumero < 0 -> ResultadoValidacionProducto(
+                esValido = false,
+                errorStock = "El stock no puede ser negativo.",
+                mensajeGeneral = "El stock no puede ser negativo."
+            )
+            else -> ResultadoValidacionProducto(esValido = true)
+        }
     }
 }

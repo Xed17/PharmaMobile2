@@ -23,12 +23,17 @@ import pe.edu.upeu.pharmamobile2.presentation.components.ValidatedTextField
 
 @Composable
 fun ProductoScreen() {
+    // Estados de texto (String crudo de los TextField)
     var nombre by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
     var stock by remember { mutableStateOf("") }
+
+    // Control y envío
     var mensaje by remember { mutableStateOf("") }
     var esError by remember { mutableStateOf(false) }
+    var intentoRegistrar by remember { mutableStateOf(false) }
 
+    // Errores por campo (derivados de la validación secuencial)
     var errorNombre by remember { mutableStateOf<String?>(null) }
     var errorPrecio by remember { mutableStateOf<String?>(null) }
     var errorStock by remember { mutableStateOf<String?>(null) }
@@ -51,39 +56,30 @@ fun ProductoScreen() {
 
         ValidatedTextField(
             value = nombre,
-            onValueChange = {
-                nombre = it
-                mensaje = ""
-                errorNombre = null
-            },
+            onValueChange = { nombre = it },
             label = "Nombre del producto",
             error = errorNombre,
+            mostrarError = intentoRegistrar,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             modifier = Modifier.fillMaxWidth()
         )
 
         ValidatedTextField(
             value = precio,
-            onValueChange = {
-                precio = it
-                mensaje = ""
-                errorPrecio = null
-            },
+            onValueChange = { precio = it },
             label = "Precio",
             error = errorPrecio,
+            mostrarError = intentoRegistrar,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth()
         )
 
         ValidatedTextField(
             value = stock,
-            onValueChange = {
-                stock = it
-                mensaje = ""
-                errorStock = null
-            },
+            onValueChange = { stock = it },
             label = "Stock",
             error = errorStock,
+            mostrarError = intentoRegistrar,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
@@ -92,35 +88,38 @@ fun ProductoScreen() {
 
         Button(
             onClick = {
+                intentoRegistrar = true
+
                 val validacion = ProductoValidator.validar(nombre, precio, stock)
 
+                // Asignar errores por campo (solo el que falla tendrá valor)
+                errorNombre = validacion.errorNombre
+                errorPrecio = validacion.errorPrecio
+                errorStock = validacion.errorStock
+
                 if (!validacion.esValido) {
-                    errorNombre = validacion.errorNombre
-                    errorPrecio = validacion.errorPrecio
-                    errorStock = validacion.errorStock
                     mensaje = validacion.mensajeGeneral ?: "Error en los datos ingresados"
                     esError = true
                 } else {
-                    errorNombre = null
-                    errorPrecio = null
-                    errorStock = null
+                    // Conversiones seguras — garantizadas por la validación secuencial
+                    val precioNumero = precio.toDoubleOrNull()!!
+                    val stockNumero = stock.toIntOrNull()!!
 
-                    val precioNumero = precio.toDouble()
-                    val stockNumero = stock.toInt()
+                    val producto = Producto(
+                        id = 0,
+                        nombre = nombre.trim(),
+                        precio = precioNumero,
+                        stock = stockNumero
+                    )
 
-                    try {
-                        val producto = Producto(
-                            id = 0,
-                            nombre = nombre.trim(),
-                            precio = precioNumero,
-                            stock = stockNumero
-                        )
-                        mensaje = "Producto registrado correctamente"
-                        esError = false
-                    } catch (e: IllegalArgumentException) {
-                        mensaje = e.message ?: "Error al registrar el producto"
-                        esError = true
-                    }
+                    mensaje = "Producto registrado correctamente"
+                    esError = false
+
+                    // Limpieza del formulario tras registro exitoso
+                    nombre = ""
+                    precio = ""
+                    stock = ""
+                    intentoRegistrar = false
                 }
             },
             modifier = Modifier.fillMaxWidth()

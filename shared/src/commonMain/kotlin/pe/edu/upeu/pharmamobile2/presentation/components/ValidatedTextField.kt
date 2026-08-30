@@ -15,19 +15,21 @@ fun ValidatedTextField(
     label: String,
     modifier: Modifier = Modifier.fillMaxWidth(),
     error: String? = null,
+    mostrarError: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     singleLine: Boolean = true
 ) {
+    val mostrarTextoError = mostrarError && !error.isNullOrBlank()
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
         modifier = modifier,
-        isError = !error.isNullOrBlank(),
-        supportingText = if (!error.isNullOrBlank()) {
+        isError = mostrarTextoError,
+        supportingText = if (mostrarTextoError) {
             {
                 Text(
-                    text = error,
+                    text = error!!,
                     color = MaterialTheme.colorScheme.error
                 )
             }
