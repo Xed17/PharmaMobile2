@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobile2.presentation.producto
+package pe.edu.upeu.pharmamobile2.presentation.cliente
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,25 +19,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import pe.edu.upeu.pharmamobile2.data.InMemoryRepository
-import pe.edu.upeu.pharmamobile2.domain.model.Producto
+import pe.edu.upeu.pharmamobile2.domain.model.Cliente
 import pe.edu.upeu.pharmamobile2.presentation.components.ValidatedTextField
 
 @Composable
-fun ProductoScreen() {
+fun ClientesScreen() {
     // Estados de texto (String crudo de los TextField)
     var nombre by remember { mutableStateOf("") }
-    var precio by remember { mutableStateOf("") }
-    var stock by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
 
     // Control y envío
     var mensaje by remember { mutableStateOf("") }
     var esError by remember { mutableStateOf(false) }
     var intentoRegistrar by remember { mutableStateOf(false) }
 
-    // Errores por campo (derivados de la validación secuencial)
+    // Errores por campo
     var errorNombre by remember { mutableStateOf<String?>(null) }
-    var errorPrecio by remember { mutableStateOf<String?>(null) }
-    var errorStock by remember { mutableStateOf<String?>(null) }
+    var errorCorreo by remember { mutableStateOf<String?>(null) }
+    var errorTelefono by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -51,14 +51,14 @@ fun ProductoScreen() {
         )
 
         Text(
-            text = "Registro de Producto",
+            text = "Registro de Cliente",
             style = MaterialTheme.typography.titleLarge
         )
 
         ValidatedTextField(
             value = nombre,
             onValueChange = { nombre = it },
-            label = "Nombre del producto",
+            label = "Nombre completo",
             error = errorNombre,
             mostrarError = intentoRegistrar,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -66,22 +66,22 @@ fun ProductoScreen() {
         )
 
         ValidatedTextField(
-            value = precio,
-            onValueChange = { precio = it },
-            label = "Precio",
-            error = errorPrecio,
+            value = correo,
+            onValueChange = { correo = it },
+            label = "Correo electrónico",
+            error = errorCorreo,
             mostrarError = intentoRegistrar,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth()
         )
 
         ValidatedTextField(
-            value = stock,
-            onValueChange = { stock = it },
-            label = "Stock",
-            error = errorStock,
+            value = telefono,
+            onValueChange = { telefono = it },
+            label = "Teléfono (opcional)",
+            error = errorTelefono,
             mostrarError = intentoRegistrar,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -91,37 +91,32 @@ fun ProductoScreen() {
             onClick = {
                 intentoRegistrar = true
 
-                val validacion = ProductoValidator.validar(nombre, precio, stock)
+                val validacion = ClienteValidator.validar(nombre, correo, telefono)
 
-                // Asignar errores por campo (solo el que falla tendrá valor)
                 errorNombre = validacion.errorNombre
-                errorPrecio = validacion.errorPrecio
-                errorStock = validacion.errorStock
+                errorCorreo = validacion.errorCorreo
+                errorTelefono = validacion.errorTelefono
 
                 if (!validacion.esValido) {
                     mensaje = validacion.mensajeGeneral ?: "Error en los datos ingresados"
                     esError = true
                 } else {
-                    // Conversiones seguras — garantizadas por la validación secuencial
-                    val precioNumero = precio.toDoubleOrNull()!!
-                    val stockNumero = stock.toIntOrNull()!!
-
-                    val producto = Producto(
-                        id = 0,
+                    val nuevoCliente = Cliente(
+                        id = 0L,
                         nombre = nombre.trim(),
-                        precio = precioNumero,
-                        stock = stockNumero
+                        correo = correo.trim(),
+                        telefono = if (telefono.isNotBlank()) telefono.trim() else null
                     )
 
-                    InMemoryRepository.agregarProducto(producto)
+                    InMemoryRepository.agregarCliente(nuevoCliente)
 
-                    mensaje = "Producto registrado correctamente"
+                    mensaje = "Cliente registrado correctamente"
                     esError = false
 
                     // Limpieza del formulario tras registro exitoso
                     nombre = ""
-                    precio = ""
-                    stock = ""
+                    correo = ""
+                    telefono = ""
                     intentoRegistrar = false
                 }
             },
