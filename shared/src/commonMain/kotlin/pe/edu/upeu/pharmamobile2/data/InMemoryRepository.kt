@@ -11,10 +11,11 @@ import pe.edu.upeu.pharmamobile2.domain.model.Producto
 object InMemoryRepository {
 
     val productos: SnapshotStateList<Producto> = mutableStateListOf(
-        Producto(id = 1, nombre = "Paracetamol 500mg", precio = 8.50, stock = 100),
-        Producto(id = 2, nombre = "Ibuprofeno 400mg", precio = 12.00, stock = 50),
-        Producto(id = 3, nombre = "Amoxicilina 500mg", precio = 18.50, stock = 30),
-        Producto(id = 4, nombre = "Loratadina 10mg", precio = 10.00, stock = 40)
+        Producto(id = 1, nombre = "Paracetamol", precio = 15.50, stock = 100, activo = true),
+        Producto(id = 2, nombre = "Ibuprofeno", precio = 18.90, stock = 50, activo = true),
+        Producto(id = 3, nombre = "Amoxicilina", precio = 25.00, stock = 5, activo = true),
+        Producto(id = 4, nombre = "Loratadina", precio = 12.50, stock = 0, activo = false),
+        Producto(id = 5, nombre = "Diclofenaco", precio = 20.00, stock = 3, activo = true)
     )
 
     val clientes: SnapshotStateList<Cliente> = mutableStateListOf(
@@ -25,7 +26,7 @@ object InMemoryRepository {
 
     val pedidos: SnapshotStateList<Pedido> = mutableStateListOf()
 
-    private var nextProductoId = 5
+    private var nextProductoId = 6
     private var nextClienteId = 4L
     private var nextPedidoId = 1
 

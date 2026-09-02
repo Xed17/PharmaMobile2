@@ -1,8 +1,12 @@
 package pe.edu.upeu.pharmamobile2
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -12,6 +16,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -76,92 +84,197 @@ private val MenuIcon: ImageVector by lazy {
 fun App() {
     var darkTheme by remember { mutableStateOf(false) }
     var pantallaActual by remember { mutableStateOf<Screen>(Screen.Inicio) }
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
 
     PharmaMobilTheme(darkTheme = darkTheme) {
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            drawerContent = {
-                ModalDrawerSheet {
-                    Text(
-                        text = "PharmaMobil",
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    HorizontalDivider()
-                    NavigationDrawerItem(
-                        label = { Text("Inicio") },
-                        selected = pantallaActual is Screen.Inicio,
-                        onClick = {
-                            pantallaActual = Screen.Inicio
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Productos") },
-                        selected = pantallaActual is Screen.Productos,
-                        onClick = {
-                            pantallaActual = Screen.Productos
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Clientes") },
-                        selected = pantallaActual is Screen.Clientes,
-                        onClick = {
-                            pantallaActual = Screen.Clientes
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Pedidos") },
-                        selected = pantallaActual is Screen.Pedidos,
-                        onClick = {
-                            pantallaActual = Screen.Pedidos
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                }
-            }
-        ) {
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text(tituloPantalla(pantallaActual)) },
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                scope.launch { drawerState.open() }
-                            }) {
-                                Icon(
-                                    imageVector = MenuIcon,
-                                    contentDescription = "Abrir menú",
-                                    tint = MaterialTheme.colorScheme.onSurface
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val width = maxWidth
+
+            when {
+                // Pantalla amplia (Desktop / Foldable abierto) >= 840dp -> PermanentNavigationDrawer
+                width >= 840.dp -> {
+                    PermanentNavigationDrawer(
+                        drawerContent = {
+                            PermanentDrawerSheet(modifier = Modifier.width(260.dp)) {
+                                Text(
+                                    text = "PharmaMobil",
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                HorizontalDivider()
+                                DrawerNavigationItems(
+                                    pantallaActual = pantallaActual,
+                                    onSelectScreen = { pantallaActual = it }
                                 )
                             }
-                        },
-                        actions = {
-                            Switch(
-                                checked = darkTheme,
-                                onCheckedChange = { darkTheme = it },
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
                         }
-                    )
-                }
-            ) { paddingValues ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    when (pantallaActual) {
-                        is Screen.Inicio -> InicioScreen()
-                        is Screen.Productos -> ProductoScreen()
-                        is Screen.Clientes -> ClientesScreen()
-                        is Screen.Pedidos -> PedidosScreen()
+                    ) {
+                        AppScaffold(
+                            pantallaActual = pantallaActual,
+                            darkTheme = darkTheme,
+                            onThemeChange = { darkTheme = it },
+                            navigationIcon = null
+                        )
                     }
                 }
+
+                // Pantalla mediana (Tablet) 600dp a 839dp -> NavigationRail
+                width >= 600.dp -> {
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        NavigationRail(
+                            modifier = Modifier.fillMaxHeight(),
+                            header = {
+                                Text(
+                                    text = "PM",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(vertical = 12.dp)
+                                )
+                            }
+                        ) {
+                            NavigationRailItem(
+                                selected = pantallaActual is Screen.Inicio,
+                                onClick = { pantallaActual = Screen.Inicio },
+                                icon = { Text("🏠") },
+                                label = { Text("Inicio") }
+                            )
+                            NavigationRailItem(
+                                selected = pantallaActual is Screen.Productos,
+                                onClick = { pantallaActual = Screen.Productos },
+                                icon = { Text("💊") },
+                                label = { Text("Productos") }
+                            )
+                            NavigationRailItem(
+                                selected = pantallaActual is Screen.Clientes,
+                                onClick = { pantallaActual = Screen.Clientes },
+                                icon = { Text("👥") },
+                                label = { Text("Clientes") }
+                            )
+                            NavigationRailItem(
+                                selected = pantallaActual is Screen.Pedidos,
+                                onClick = { pantallaActual = Screen.Pedidos },
+                                icon = { Text("📋") },
+                                label = { Text("Pedidos") }
+                            )
+                        }
+
+                        Box(modifier = Modifier.weight(1f)) {
+                            AppScaffold(
+                                pantallaActual = pantallaActual,
+                                darkTheme = darkTheme,
+                                onThemeChange = { darkTheme = it },
+                                navigationIcon = null
+                            )
+                        }
+                    }
+                }
+
+                // Teléfono (< 600dp) -> ModalNavigationDrawer estándar
+                else -> {
+                    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                    val scope = rememberCoroutineScope()
+
+                    ModalNavigationDrawer(
+                        drawerState = drawerState,
+                        drawerContent = {
+                            ModalDrawerSheet {
+                                Text(
+                                    text = "PharmaMobil",
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                HorizontalDivider()
+                                DrawerNavigationItems(
+                                    pantallaActual = pantallaActual,
+                                    onSelectScreen = {
+                                        pantallaActual = it
+                                        scope.launch { drawerState.close() }
+                                    }
+                                )
+                            }
+                        }
+                    ) {
+                        AppScaffold(
+                            pantallaActual = pantallaActual,
+                            darkTheme = darkTheme,
+                            onThemeChange = { darkTheme = it },
+                            navigationIcon = {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(
+                                        imageVector = MenuIcon,
+                                        contentDescription = "Abrir menú",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DrawerNavigationItems(
+    pantallaActual: Screen,
+    onSelectScreen: (Screen) -> Unit
+) {
+    NavigationDrawerItem(
+        label = { Text("Inicio") },
+        selected = pantallaActual is Screen.Inicio,
+        onClick = { onSelectScreen(Screen.Inicio) }
+    )
+    NavigationDrawerItem(
+        label = { Text("Productos") },
+        selected = pantallaActual is Screen.Productos,
+        onClick = { onSelectScreen(Screen.Productos) }
+    )
+    NavigationDrawerItem(
+        label = { Text("Clientes") },
+        selected = pantallaActual is Screen.Clientes,
+        onClick = { onSelectScreen(Screen.Clientes) }
+    )
+    NavigationDrawerItem(
+        label = { Text("Pedidos") },
+        selected = pantallaActual is Screen.Pedidos,
+        onClick = { onSelectScreen(Screen.Pedidos) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppScaffold(
+    pantallaActual: Screen,
+    darkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
+    navigationIcon: (@Composable () -> Unit)?
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(tituloPantalla(pantallaActual)) },
+                navigationIcon = {
+                    navigationIcon?.invoke()
+                },
+                actions = {
+                    Switch(
+                        checked = darkTheme,
+                        onCheckedChange = onThemeChange,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (pantallaActual) {
+                is Screen.Inicio -> InicioScreen()
+                is Screen.Productos -> ProductoScreen()
+                is Screen.Clientes -> ClientesScreen()
+                is Screen.Pedidos -> PedidosScreen()
             }
         }
     }

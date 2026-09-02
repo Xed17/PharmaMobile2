@@ -4,7 +4,8 @@ data class Producto (
     val id: Int,
     val nombre: String,
     val precio: Double,
-    val stock: Int
+    val stock: Int,
+    val activo: Boolean = true
 ) {
     init {
         require (nombre.isNotBlank()) {
@@ -22,6 +23,9 @@ data class Producto (
     }
     fun estadoDisponible(): Boolean {
         return stock > 0
+    }
+    fun esBajoStock(): Boolean {
+        return activo && stock <= 5
     }
     fun valorInventario(): Double {
         return precio*stock
