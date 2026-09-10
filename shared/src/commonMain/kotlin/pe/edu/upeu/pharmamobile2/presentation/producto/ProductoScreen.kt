@@ -16,12 +16,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,30 +34,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import pe.edu.upeu.pharmamobile2.data.InMemoryRepository
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
 import pe.edu.upeu.pharmamobile2.presentation.components.ValidatedTextField
 
 @Composable
-fun ProductoScreen() {
-    // Estados de texto (String crudo de los TextField)
-    var nombre by remember { mutableStateOf("") }
-    var precio by remember { mutableStateOf("") }
-    var stock by remember { mutableStateOf("") }
+fun ProductoScreen(
+    viewModel: ProductoViewModel
+) {
+    val state by viewModel.uiState.collectAsState()
 
-    // Control y envío
-    var mensaje by remember { mutableStateOf("") }
-    var esError by remember { mutableStateOf(false) }
-    var intentoRegistrar by remember { mutableStateOf(false) }
-
-    // Errores por campo (derivados de la validación secuencial)
-    var errorNombre by remember { mutableStateOf<String?>(null) }
-    var errorPrecio by remember { mutableStateOf<String?>(null) }
-    var errorStock by remember { mutableStateOf<String?>(null) }
-
-    // Estado de Tabs: 0 = Activos, 1 = Inactivos, 2 = Bajo stock
+    // Estado efímero de UI
     var tabSeleccionada by remember { mutableStateOf(0) }
-
     val scrollState = rememberScrollState()
 
     Column(
@@ -76,31 +65,31 @@ fun ProductoScreen() {
         )
 
         ValidatedTextField(
-            value = nombre,
-            onValueChange = { nombre = it },
+            value = state.nombre,
+            onValueChange = { viewModel.actualizarNombre(it) },
             label = "Nombre del producto",
-            error = errorNombre,
-            mostrarError = intentoRegistrar,
+            error = state.errorNombre,
+            mostrarError = state.errorNombre != null,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             modifier = Modifier.fillMaxWidth()
         )
 
         ValidatedTextField(
-            value = precio,
-            onValueChange = { precio = it },
+            value = state.precio,
+            onValueChange = { viewModel.actualizarPrecio(it) },
             label = "Precio",
-            error = errorPrecio,
-            mostrarError = intentoRegistrar,
+            error = state.errorPrecio,
+            mostrarError = state.errorPrecio != null,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth()
         )
 
         ValidatedTextField(
-            value = stock,
-            onValueChange = { stock = it },
+            value = state.stock,
+            onValueChange = { viewModel.actualizarStock(it) },
             label = "Stock",
-            error = errorStock,
-            mostrarError = intentoRegistrar,
+            error = state.errorStock,
+            mostrarError = state.errorStock != null,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
@@ -108,118 +97,149 @@ fun ProductoScreen() {
         Spacer(modifier = Modifier.height(4.dp))
 
         Button(
-            onClick = {
-                intentoRegistrar = true
-
-                val validacion = ProductoValidator.validar(nombre, precio, stock)
-
-                errorNombre = validacion.errorNombre
-                errorPrecio = validacion.errorPrecio
-                errorStock = validacion.errorStock
-
-                if (!validacion.esValido) {
-                    mensaje = validacion.mensajeGeneral ?: "Error en los datos ingresados"
-                    esError = true
-                } else {
-                    val precioNumero = precio.toDoubleOrNull()!!
-                    val stockNumero = stock.toIntOrNull()!!
-
-                    val producto = Producto(
-                        id = 0,
-                        nombre = nombre.trim(),
-                        precio = precioNumero,
-                        stock = stockNumero,
-                        activo = true
-                    )
-
-                    InMemoryRepository.agregarProducto(producto)
-
-                    mensaje = "Producto registrado correctamente"
-                    esError = false
-
-                    // Limpieza del formulario tras registro exitoso
-                    nombre = ""
-                    precio = ""
-                    stock = ""
-                    intentoRegistrar = false
-                }
-            },
+            onClick = { viewModel.registrar() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Registrar")
         }
 
-        if (mensaje.isNotBlank()) {
-            Text(
-                text = mensaje,
-                color = if (esError) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            )
+        state.mensajeFormulario?.let { mensaje ->
+            if (mensaje.isNotBlank()) {
+                Text(
+                    text = mensaje,
+                    color = if (state.esErrorFormulario) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
         HorizontalDivider()
 
-        // SECCIÓN INVENTARIO CON TABS
+        // SECCIÓN INVENTARIO CON TABS Y FASES
         Text(
             text = "Clasificación de Inventario",
             style = MaterialTheme.typography.titleLarge
         )
 
-        // Filtros según especificación:
-        // Activos: activo && stock > 5
-        // Inactivos: !activo
-        // Bajo Stock: activo && stock <= 5
-        val productosActivos = InMemoryRepository.productos.filter { it.activo && it.stock > 5 }
-        val productosInactivos = InMemoryRepository.productos.filter { !it.activo }
-        val productosBajoStock = InMemoryRepository.productos.filter { it.activo && it.stock <= 5 }
-
-        val titulosTabs = listOf(
-            "Activos (${productosActivos.size})",
-            "Inactivos (${productosInactivos.size})",
-            "Bajo stock (${productosBajoStock.size})"
-        )
-
-        ScrollableTabRow(
-            selectedTabIndex = tabSeleccionada,
-            edgePadding = 0.dp,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            titulosTabs.forEachIndexed { index, titulo ->
-                Tab(
-                    selected = tabSeleccionada == index,
-                    onClick = { tabSeleccionada = index },
-                    text = { Text(titulo, fontWeight = if (tabSeleccionada == index) FontWeight.Bold else FontWeight.Normal) }
-                )
+        when (val fase = state.fase) {
+            FaseProductos.Cargando -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Cargando inventario...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
-        }
 
-        val listaActual = when (tabSeleccionada) {
-            0 -> productosActivos
-            1 -> productosInactivos
-            else -> productosBajoStock
-        }
-
-        if (listaActual.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No hay productos en esta categoría",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            FaseProductos.SinProductos -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No hay productos registrados en el inventario",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                listaActual.forEach { prod ->
-                    ProductoItemCard(prod, tabSeleccionada)
+
+            is FaseProductos.Error -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = fase.mensaje,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Button(onClick = { viewModel.cargarProductos() }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+            }
+
+            is FaseProductos.ConProductos -> {
+                val productosActivos = fase.productos.filter { it.activo && it.stock > 5 }
+                val productosInactivos = fase.productos.filter { !it.activo }
+                val productosBajoStock = fase.productos.filter { it.activo && it.stock <= 5 }
+
+                val titulosTabs = listOf(
+                    "Activos (${productosActivos.size})",
+                    "Inactivos (${productosInactivos.size})",
+                    "Bajo stock (${productosBajoStock.size})"
+                )
+
+                ScrollableTabRow(
+                    selectedTabIndex = tabSeleccionada,
+                    edgePadding = 0.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    titulosTabs.forEachIndexed { index, titulo ->
+                        Tab(
+                            selected = tabSeleccionada == index,
+                            onClick = { tabSeleccionada = index },
+                            text = {
+                                Text(
+                                    titulo,
+                                    fontWeight = if (tabSeleccionada == index) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                        )
+                    }
+                }
+
+                val listaActual = when (tabSeleccionada) {
+                    0 -> productosActivos
+                    1 -> productosInactivos
+                    else -> productosBajoStock
+                }
+
+                if (listaActual.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No hay productos en esta categoría",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listaActual.forEach { prod ->
+                            ProductoItemCard(prod, tabSeleccionada)
+                        }
+                    }
                 }
             }
         }
@@ -268,7 +288,7 @@ private fun ProductoItemCard(producto: Producto, tab: Int) {
                     MaterialTheme.colorScheme.errorContainer,
                     MaterialTheme.colorScheme.onErrorContainer
                 )
-                producto.stock <= 5 -> Triple(
+                producto.esBajoStock() -> Triple(
                     "Bajo Stock",
                     MaterialTheme.colorScheme.error,
                     MaterialTheme.colorScheme.onError
