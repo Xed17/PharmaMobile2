@@ -39,12 +39,15 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.koin.compose.KoinContext
+import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.pharmamobile2.navigation.Screen
 import pe.edu.upeu.pharmamobile2.navigation.tituloPantalla
 import pe.edu.upeu.pharmamobile2.presentation.cliente.ClientesScreen
 import pe.edu.upeu.pharmamobile2.presentation.inicio.InicioScreen
 import pe.edu.upeu.pharmamobile2.presentation.pedido.PedidosScreen
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoScreen
+import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
 import pe.edu.upeu.pharmamobile2.theme.PharmaMobilTheme
 
 private val MenuIcon: ImageVector by lazy {
@@ -85,8 +88,9 @@ fun App() {
     var darkTheme by remember { mutableStateOf(false) }
     var pantallaActual by remember { mutableStateOf<Screen>(Screen.Inicio) }
 
-    PharmaMobilTheme(darkTheme = darkTheme) {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    KoinContext {
+        PharmaMobilTheme(darkTheme = darkTheme) {
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val width = maxWidth
 
             when {
@@ -212,6 +216,7 @@ fun App() {
         }
     }
 }
+}
 
 @Composable
 private fun DrawerNavigationItems(
@@ -272,7 +277,10 @@ private fun AppScaffold(
         ) {
             when (pantallaActual) {
                 is Screen.Inicio -> InicioScreen()
-                is Screen.Productos -> ProductoScreen()
+                is Screen.Productos -> {
+                    val viewModel: ProductoViewModel = koinViewModel()
+                    ProductoScreen(viewModel = viewModel)
+                }
                 is Screen.Clientes -> ClientesScreen()
                 is Screen.Pedidos -> PedidosScreen()
             }

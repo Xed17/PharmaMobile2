@@ -1,23 +1,15 @@
 package pe.edu.upeu.pharmamobile2.domain.model
 
+const val STOCK_MINIMO = 10
+
 data class Producto (
-    val id: Int,
+    val id: Int = 0,
     val nombre: String,
     val precio: Double,
     val stock: Int,
     val activo: Boolean = true
 ) {
-    init {
-        require (nombre.isNotBlank()) {
-            "El nombre no puede estar vacio"
-        }
-        require (precio > 0) {
-            "El precio debe ser mayor que 0"
-        }
-        require (stock >= 0) {
-            "El stock no puede ser negativo"
-        }
-    }
+    fun requiereReposicion(): Boolean = stock <= STOCK_MINIMO
     fun verificarStock(cantidad: Int): Boolean {
         return stock >= cantidad
     }
