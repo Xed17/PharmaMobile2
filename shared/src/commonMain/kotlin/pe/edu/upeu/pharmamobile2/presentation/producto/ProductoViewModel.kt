@@ -52,9 +52,22 @@ class ProductoViewModel(
                 }
                 .onFailure { error ->
                     _uiState.update {
-                        it.copy(fase = FaseProductos.Error(error.message ?: "Error inesperado"))
+                        it.copy(fase = FaseProductos.Error(error.mensajeLegible()))
                     }
                 }
+        }
+    }
+
+    private fun Throwable.mensajeLegible(): String {
+        return when (this) {
+            is io.ktor.client.plugins.ClientRequestException ->
+                "La solicitud no es válida o el recurso no existe (404/400)."
+            is io.ktor.client.plugins.ServerResponseException ->
+                "El servidor presentó un problema (500). Intente nuevamente."
+            is io.ktor.client.plugins.HttpRequestTimeoutException ->
+                "Tiempo de espera agotado al conectar con el servidor."
+            else ->
+                message ?: "No fue posible conectar con el servidor. Intente nuevamente."
         }
     }
 
