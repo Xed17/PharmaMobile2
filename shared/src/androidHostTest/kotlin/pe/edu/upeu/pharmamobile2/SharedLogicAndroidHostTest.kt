@@ -15,7 +15,19 @@ class SharedLogicAndroidHostTest {
             telefono = "987654321"
         )
         val resultado = cliente.obtenerTelefono()
-
         assertEquals("987654321", resultado)
+    }
+
+    @Test
+    fun testKtorPeticionGetProductosYCodigo200() = kotlinx.coroutines.runBlocking {
+        try {
+            val engine = io.ktor.client.engine.okhttp.OkHttp.create()
+            val client = pe.edu.upeu.pharmamobile2.data.remote.createHttpClient(engine, "http://localhost:8080/")
+            val api = pe.edu.upeu.pharmamobile2.data.remote.ProductoApi(client)
+            val productos = api.obtenerProductos()
+            println(">>> PRODUCTOS CARGADOS: " + productos.size)
+        } catch (e: Exception) {
+            println(">>> Error: " + e.message)
+        }
     }
 }

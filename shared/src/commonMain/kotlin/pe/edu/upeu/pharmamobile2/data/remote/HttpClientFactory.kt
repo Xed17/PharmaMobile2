@@ -30,7 +30,12 @@ fun createHttpClient(
         }
 
         install(Logging) {
-            level = LogLevel.HEADERS
+            logger = object : io.ktor.client.plugins.logging.Logger {
+                override fun log(message: String) {
+                    println(message)
+                }
+            }
+            level = LogLevel.ALL
         }
 
         install(HttpTimeout) {
