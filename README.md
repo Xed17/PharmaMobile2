@@ -30,7 +30,7 @@ Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-mu
 
 ---
 
-# Integración REST con Ktor
+# Conectividad REST (Integración con Ktor Client)
 
 ## Rama de trabajo
 `feature/ktor-client`
