@@ -28,6 +28,9 @@ class ProductoApi(
             parameter("direccion", direccion)
         }.body()
 
+    suspend fun obtenerProductos(): List<ProductoResponseDto> =
+        listar().contenido
+
     suspend fun obtener(
         id: Long
     ): ProductoResponseDto =
