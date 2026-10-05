@@ -141,11 +141,8 @@ class ProductoViewModel(
     private fun ejecutarCreacion() = viewModelScope.launch {
         val form = _uiState.value.formulario
 
-        // Validación local previa rápida
-        if (!validarFormularioLocal(form)) return@launch
-
         val precioNum = form.precio.toDoubleOrNull() ?: 0.0
-        val stockNum = form.stock.toIntOrNull() ?: 0
+        val stockNum = form.stock.toIntOrNull() ?: -1
 
         val nuevoProducto = Producto(
             id = 0L,
@@ -181,10 +178,8 @@ class ProductoViewModel(
         val form = _uiState.value.formulario
         val idProducto = form.id ?: return@launch
 
-        if (!validarFormularioLocal(form)) return@launch
-
         val precioNum = form.precio.toDoubleOrNull() ?: 0.0
-        val stockNum = form.stock.toIntOrNull() ?: 0
+        val stockNum = form.stock.toIntOrNull() ?: -1
 
         val productoActualizado = Producto(
             id = idProducto,
@@ -236,51 +231,7 @@ class ProductoViewModel(
             }
     }
 
-    private fun validarFormularioLocal(form: FormularioProducto): Boolean {
-        var esValido = true
-        var errorNom: String? = null
-        var errorPre: String? = null
-        var errorStk: String? = null
 
-        if (form.nombre.isBlank()) {
-            errorNom = "El nombre es obligatorio"
-            esValido = false
-        } else if (form.nombre.trim().length < 3) {
-            errorNom = "El nombre debe tener al menos 3 caracteres"
-            esValido = false
-        }
-
-        val precioDouble = form.precio.toDoubleOrNull()
-        if (precioDouble == null) {
-            errorPre = "Ingrese un precio numérico válido"
-            esValido = false
-        } else if (precioDouble <= 0.0) {
-            errorPre = "El precio debe ser mayor que cero"
-            esValido = false
-        }
-
-        val stockInt = form.stock.toIntOrNull()
-        if (stockInt == null) {
-            errorStk = "Ingrese un stock numérico válido"
-            esValido = false
-        } else if (stockInt < 0) {
-            errorStk = "El stock no puede ser negativo"
-            esValido = false
-        }
-
-        if (!esValido) {
-            _uiState.update {
-                it.copy(
-                    formulario = it.formulario.copy(
-                        nombreError = errorNom,
-                        precioError = errorPre,
-                        stockError = errorStk
-                    )
-                )
-            }
-        }
-        return esValido
-    }
 
     private fun manejarFallo(fallo: Throwable) {
         val errorApi = (fallo as? ErrorApiException)?.error
