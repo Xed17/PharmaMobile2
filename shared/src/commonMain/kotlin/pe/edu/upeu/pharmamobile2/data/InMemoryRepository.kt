@@ -11,11 +11,11 @@ import pe.edu.upeu.pharmamobile2.domain.model.Producto
 object InMemoryRepository {
 
     val productos: SnapshotStateList<Producto> = mutableStateListOf(
-        Producto(id = 1, nombre = "Paracetamol", precio = 15.50, stock = 100, activo = true),
-        Producto(id = 2, nombre = "Ibuprofeno", precio = 18.90, stock = 50, activo = true),
-        Producto(id = 3, nombre = "Amoxicilina", precio = 25.00, stock = 5, activo = true),
-        Producto(id = 4, nombre = "Loratadina", precio = 12.50, stock = 0, activo = false),
-        Producto(id = 5, nombre = "Diclofenaco", precio = 20.00, stock = 3, activo = true)
+        Producto(id = 1L, nombre = "Paracetamol", precio = 15.50, stock = 100, activo = true),
+        Producto(id = 2L, nombre = "Ibuprofeno", precio = 18.90, stock = 50, activo = true),
+        Producto(id = 3L, nombre = "Amoxicilina", precio = 25.00, stock = 5, activo = true),
+        Producto(id = 4L, nombre = "Loratadina", precio = 12.50, stock = 0, activo = false),
+        Producto(id = 5L, nombre = "Diclofenaco", precio = 20.00, stock = 3, activo = true)
     )
 
     val clientes: SnapshotStateList<Cliente> = mutableStateListOf(
@@ -26,12 +26,12 @@ object InMemoryRepository {
 
     val pedidos: SnapshotStateList<Pedido> = mutableStateListOf()
 
-    private var nextProductoId = 6
+    private var nextProductoId = 6L
     private var nextClienteId = 4L
     private var nextPedidoId = 1
 
     fun agregarProducto(producto: Producto) {
-        val nuevoProducto = if (producto.id <= 0) {
+        val nuevoProducto = if (producto.id <= 0L) {
             producto.copy(id = nextProductoId++)
         } else {
             producto
@@ -65,5 +65,14 @@ object InMemoryRepository {
         )
         pedidos.add(nuevoPedido)
         return nuevoPedido
+    }
+
+    fun actualizarEstadoPedido(pedidoId: Int, nuevoEstado: EstadoPedido): Boolean {
+        val index = pedidos.indexOfFirst { it.id == pedidoId }
+        if (index != -1) {
+            pedidos[index] = pedidos[index].copy(estado = nuevoEstado)
+            return true
+        }
+        return false
     }
 }

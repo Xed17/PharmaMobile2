@@ -8,8 +8,12 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 import pe.edu.upeu.pharmamobile2.data.remote.ProductoApi
 import pe.edu.upeu.pharmamobile2.data.remote.createHttpClient
-import pe.edu.upeu.pharmamobile2.data.repository.ProductoRepositoryImpl
+import pe.edu.upeu.pharmamobile2.data.repository.ProductoRepositorioRest
 import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
+import pe.edu.upeu.pharmamobile2.domain.usecase.ActualizarProductoUseCase
+import pe.edu.upeu.pharmamobile2.domain.usecase.EliminarProductoUseCase
+import pe.edu.upeu.pharmamobile2.domain.usecase.ListarProductosUseCase
+import pe.edu.upeu.pharmamobile2.domain.usecase.ObtenerProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
 
@@ -19,15 +23,27 @@ val dataModule = module {
         createHttpClient(get(), baseUrl)
     }
     single<ProductoApi> { ProductoApi(get()) }
-    single<ProductoRepository> { ProductoRepositoryImpl(get()) }
+    single<ProductoRepository> { ProductoRepositorioRest(get(), categoriaPorDefecto = 26L) }
 }
 
 val domainModule = module {
+    factory { ListarProductosUseCase(get()) }
+    factory { ObtenerProductoUseCase(get()) }
     factory { RegistrarProductoUseCase(get()) }
+    factory { ActualizarProductoUseCase(get()) }
+    factory { EliminarProductoUseCase(get()) }
 }
 
 val presentationModule = module {
-    viewModel { ProductoViewModel(get(), get()) }
+    viewModel {
+        ProductoViewModel(
+            listarProductos = get(),
+            obtenerProducto = get(),
+            registrarProducto = get(),
+            actualizarProducto = get(),
+            eliminarProducto = get()
+        )
+    }
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {
