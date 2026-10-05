@@ -82,8 +82,8 @@ Microservicio REST Spring Boot (PharmaBackend: /api/v1/productos)
 - `PaginaResponseDto<T>`: Envoltorio genérico de paginación (`contenido`, `pagina`, `tamanio`, `totalElementos`, `totalPaginas`, `ultima`).
 - `ErrorResponseDto`: Esquema de error del backend con `validationErrors` mapeados a los campos del formulario.
 
-## Manejo Tipado de Errores (`ErrorApi`)
-Las capas de presentación y dominio están 100% aisladas de Ktor:
+## Manejo de errores
+Las capas de presentación y dominio están 100% aisladas de Ktor mediante la jerarquía sellada `ErrorApi`:
 - `ErrorApi.Validacion`: Errores 400 por campo (`nombreError`, `precioError`, `stockError` visibles bajo los inputs).
 - `ErrorApi.NoEncontrado`: HTTP 404.
 - `ErrorApi.Conflicto`: HTTP 409 (regla de negocio / duplicados).
