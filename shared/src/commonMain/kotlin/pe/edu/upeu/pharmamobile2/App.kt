@@ -44,11 +44,38 @@ import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.pharmamobile2.navigation.Screen
 import pe.edu.upeu.pharmamobile2.navigation.tituloPantalla
 import pe.edu.upeu.pharmamobile2.presentation.cliente.ClientesScreen
+import pe.edu.upeu.pharmamobile2.presentation.detalle.DetalleProductoScreen
+import pe.edu.upeu.pharmamobile2.presentation.detalle.DetalleProductoViewModel
 import pe.edu.upeu.pharmamobile2.presentation.inicio.InicioScreen
 import pe.edu.upeu.pharmamobile2.presentation.pedido.PedidosScreen
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoScreen
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
+import pe.edu.upeu.pharmamobile2.presentation.producto.toDomain
 import pe.edu.upeu.pharmamobile2.theme.PharmaMobilTheme
+
+private val ArrowBackIcon: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "ArrowBack",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).apply {
+        path(fill = SolidColor(Color.Black)) {
+            moveTo(20f, 11f)
+            horizontalLineTo(7.83f)
+            lineToRelative(5.59f, -5.59f)
+            lineTo(12f, 4f)
+            lineToRelative(-8f, 8f)
+            lineToRelative(8f, 8f)
+            lineToRelative(1.41f, -1.41f)
+            lineTo(7.83f, 13f)
+            horizontalLineTo(20f)
+            verticalLineToRelative(-2f)
+            close()
+        }
+    }.build()
+}
 
 private val MenuIcon: ImageVector by lazy {
     ImageVector.Builder(
@@ -116,6 +143,7 @@ fun App() {
                             pantallaActual = pantallaActual,
                             darkTheme = darkTheme,
                             onThemeChange = { darkTheme = it },
+                            onSelectScreen = { pantallaActual = it },
                             navigationIcon = null
                         )
                     }
@@ -141,7 +169,7 @@ fun App() {
                                 label = { Text("Inicio") }
                             )
                             NavigationRailItem(
-                                selected = pantallaActual is Screen.Productos,
+                                selected = pantallaActual is Screen.Productos || pantallaActual is Screen.DetalleProducto,
                                 onClick = { pantallaActual = Screen.Productos },
                                 icon = { Text("💊") },
                                 label = { Text("Productos") }
@@ -165,6 +193,7 @@ fun App() {
                                 pantallaActual = pantallaActual,
                                 darkTheme = darkTheme,
                                 onThemeChange = { darkTheme = it },
+                                onSelectScreen = { pantallaActual = it },
                                 navigationIcon = null
                             )
                         }
@@ -200,6 +229,7 @@ fun App() {
                             pantallaActual = pantallaActual,
                             darkTheme = darkTheme,
                             onThemeChange = { darkTheme = it },
+                            onSelectScreen = { pantallaActual = it },
                             navigationIcon = {
                                 IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                     Icon(
@@ -230,7 +260,7 @@ private fun DrawerNavigationItems(
     )
     NavigationDrawerItem(
         label = { Text("Productos") },
-        selected = pantallaActual is Screen.Productos,
+        selected = pantallaActual is Screen.Productos || pantallaActual is Screen.DetalleProducto,
         onClick = { onSelectScreen(Screen.Productos) }
     )
     NavigationDrawerItem(
@@ -251,6 +281,7 @@ private fun AppScaffold(
     pantallaActual: Screen,
     darkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit,
+    onSelectScreen: (Screen) -> Unit,
     navigationIcon: (@Composable () -> Unit)?
 ) {
     Scaffold(
@@ -258,7 +289,17 @@ private fun AppScaffold(
             TopAppBar(
                 title = { Text(tituloPantalla(pantallaActual)) },
                 navigationIcon = {
-                    navigationIcon?.invoke()
+                    if (pantallaActual is Screen.DetalleProducto) {
+                        IconButton(onClick = { onSelectScreen(Screen.Productos) }) {
+                            Icon(
+                                imageVector = ArrowBackIcon,
+                                contentDescription = "Volver a productos",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    } else {
+                        navigationIcon?.invoke()
+                    }
                 },
                 actions = {
                     Switch(
@@ -279,7 +320,20 @@ private fun AppScaffold(
                 is Screen.Inicio -> InicioScreen()
                 is Screen.Productos -> {
                     val viewModel: ProductoViewModel = koinViewModel()
-                    ProductoScreen(viewModel = viewModel)
+                    val detalleVm: DetalleProductoViewModel = koinViewModel()
+                    ProductoScreen(
+                        viewModel = viewModel,
+                        onVerDetalle = { id -> onSelectScreen(Screen.DetalleProducto(id)) },
+                        onCompartir = { prod -> detalleVm.compartir(prod.toDomain()) }
+                    )
+                }
+                is Screen.DetalleProducto -> {
+                    val detalleVm: DetalleProductoViewModel = koinViewModel()
+                    DetalleProductoScreen(
+                        productoId = pantallaActual.productoId,
+                        viewModel = detalleVm,
+                        onVolver = { onSelectScreen(Screen.Productos) }
+                    )
                 }
                 is Screen.Clientes -> ClientesScreen()
                 is Screen.Pedidos -> PedidosScreen()

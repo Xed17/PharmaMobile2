@@ -15,6 +15,7 @@ import pe.edu.upeu.pharmamobile2.domain.usecase.EliminarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ObtenerProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.RegistrarProductoUseCase
+import pe.edu.upeu.pharmamobile2.presentation.detalle.DetalleProductoViewModel
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
 
 val dataModule = module {
@@ -42,6 +43,12 @@ val presentationModule = module {
             registrarProducto = get(),
             actualizarProducto = get(),
             eliminarProducto = get()
+        )
+    }
+    viewModel {
+        DetalleProductoViewModel(
+            repository = get(),
+            compartidor = get()
         )
     }
 }
