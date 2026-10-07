@@ -42,8 +42,49 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
 import pe.edu.upeu.pharmamobile2.presentation.components.ValidatedTextField
+
+private val ShareIcon: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "Share",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).apply {
+        path(fill = SolidColor(Color.White)) {
+            moveTo(18f, 16.08f)
+            curveToRelative(-0.76f, 0f, -1.44f, 0.3f, -1.96f, 0.77f)
+            lineTo(8.91f, 12.7f)
+            curveToRelative(0.05f, -0.23f, 0.09f, -0.46f, 0.09f, -0.7f)
+            reflectiveCurveToRelative(-0.04f, -0.47f, -0.09f, -0.7f)
+            lineToRelative(7.05f, -4.11f)
+            curveToRelative(0.54f, 0.5f, 1.25f, 0.81f, 2.04f, 0.81f)
+            curveToRelative(1.66f, 0f, 3f, -1.34f, 3f, -3f)
+            reflectiveCurveToRelative(-1.34f, -3f, -3f, -3f)
+            reflectiveCurveToRelative(-3f, 1.34f, -3f, 3f)
+            curveToRelative(0f, 0.24f, 0.04f, 0.47f, 0.09f, 0.7f)
+            lineTo(8.04f, 9.81f)
+            curveTo(7.5f, 9.31f, 6.79f, 9f, 6f, 9f)
+            curveToRelative(-1.66f, 0f, -3f, 1.34f, -3f, 3f)
+            reflectiveCurveToRelative(1.34f, 3f, 3f, 3f)
+            curveToRelative(0.79f, 0f, 1.5f, -0.31f, 2.04f, -0.81f)
+            lineToRelative(7.12f, 4.16f)
+            curveToRelative(-0.05f, 0.21f, -0.08f, 0.43f, -0.08f, 0.65f)
+            curveToRelative(0f, 1.61f, 1.31f, 2.92f, 2.92f, 2.92f)
+            reflectiveCurveToRelative(2.92f, -1.31f, 2.92f, -2.92f)
+            curveToRelative(0f, -1.61f, -1.31f, -2.92f, -2.92f, -2.92f)
+            close()
+        }
+    }.build()
+}
 
 // Categorías del catálogo backend PharmaSoft
 private val CATEGORIAS_DISPONIBLES = listOf(
@@ -56,14 +97,16 @@ private val CATEGORIAS_DISPONIBLES = listOf(
 
 @Composable
 fun ProductoScreen(
-    viewModel: ProductoViewModel
+    viewModel: ProductoViewModel,
+    onVerDetalle: (Long) -> Unit = {},
+    onCompartir: ((ProductoUi) -> Unit)? = null
 ) {
     val state by viewModel.uiState.collectAsState()
     val form = state.formulario
     val scrollState = rememberScrollState()
 
     var tabSeleccionada by remember { mutableStateOf(0) }
-    var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
+    var productoAEliminar by remember { mutableStateOf<ProductoUi?>(null) }
 
     val estaOperando = state.operacion is ProductoUiState.Operacion.EnCurso
 
@@ -340,7 +383,7 @@ fun ProductoScreen(
 
                 ScrollableTabRow(
                     selectedTabIndex = tabSeleccionada,
-                    edgePadding = 0.dp,
+                    edgePadding = 8.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     titulosTabs.forEachIndexed { index, titulo ->
@@ -383,6 +426,8 @@ fun ProductoScreen(
                             ProductoItemCard(
                                 producto = prod,
                                 estaOperando = estaOperando,
+                                onVerDetalle = { onVerDetalle(prod.id) },
+                                onCompartir = { onCompartir?.invoke(prod) },
                                 onEditar = { viewModel.seleccionarParaEditar(prod) },
                                 onEliminar = { productoAEliminar = prod }
                             )
@@ -424,8 +469,10 @@ fun ProductoScreen(
 
 @Composable
 private fun ProductoItemCard(
-    producto: Producto,
+    producto: ProductoUi,
     estaOperando: Boolean,
+    onVerDetalle: () -> Unit,
+    onCompartir: () -> Unit,
     onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
@@ -459,9 +506,10 @@ private fun ProductoItemCard(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Precio: S/ ${((producto.precio * 100).toLong() / 100.0)}",
+                        text = "Precio: ${producto.precio}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = "Stock disponible: ${producto.stock} unidades",
@@ -505,23 +553,54 @@ private fun ProductoItemCard(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // Botones Editar y Eliminar
+            // Fila 1 de acciones: Navegación y Difusión
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = onVerDetalle,
+                    enabled = !estaOperando,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Ver Detalle")
+                }
+                Button(
+                    onClick = onCompartir,
+                    enabled = !estaOperando,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Icon(
+                        imageVector = ShareIcon,
+                        contentDescription = "Compartir",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Compartir")
+                }
+            }
+
+            // Fila 2 de acciones: Gestión CRUD
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedButton(
                     onClick = onEditar,
                     enabled = !estaOperando,
-                    modifier = Modifier.padding(end = 8.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text("Editar")
                 }
-
                 Button(
                     onClick = onEliminar,
                     enabled = !estaOperando,
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     )

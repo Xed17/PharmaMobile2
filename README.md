@@ -139,3 +139,64 @@ En la vista Compose, el componente `ValidatedTextField` evalúa `error = form.no
 - **Fase de Pantalla:** `Cargando`, `SinProductos`, `ConProductos(productos)`, `Error(mensaje)`.
 - **Operación Concurrente:** `Inactiva`, `EnCurso(Tipo: Crear, Actualizar, Eliminar)`, `Fallida(mensaje)`.
 - Al crear, actualizar o eliminar, la lista de productos **permanece visible** sin destruirse ni volver a pantalla completa de carga, y se recarga automáticamente tras la mutación.
+
+---
+
+## Capacidades nativas
+
+En esta práctica se integran capacidades de plataforma nativa en **PharmaMobile2** bajo Kotlin Multiplatform (KMP), asegurando que la lógica de negocio y la interfaz de usuario en Compose Multiplatform permanezcan completamente agnósticas al sistema operativo (Android / iOS).
+
+### 1. Formato de moneda (`expect` / `actual`)
+
+Para garantizar que el precio de cada producto se presente respetando las convenciones monetarias oficiales de Perú (`S/`), se implementó la función `formatearSoles`:
+
+- **Declaración común (`expect`):** `shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/platform/Formato.kt`
+  ```kotlin
+  expect fun formatearSoles(valor: Double): String
+  ```
+- **Implementación Android (`actual`):** `shared/src/androidMain/kotlin/pe/edu/upeu/pharmamobile2/platform/Formato.android.kt`
+  Utiliza `java.text.NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-PE"))`.
+- **Implementación iOS (`actual`):** `shared/src/iosMain/kotlin/pe/edu/upeu/pharmamobile2/platform/Formato.ios.kt`
+  Utiliza `platform.Foundation.NSNumberFormatter` con estilo `NSNumberFormatterCurrencyStyle` y locale `es_PE`.
+- **Mapeo a nivel de presentación (`ProductoUi`):** El modelo de dominio `Producto` mantiene `precio: Double`, mientras que `ProductoUi` expone `precio: String` ya formateado para la UI, evitando formatear repetidamente en recomposiciones de Compose.
+
+### 2. Compartir producto (Inyección de Dependencias con Koin)
+
+Para permitir compartir la ficha de un medicamento hacia aplicaciones externas (WhatsApp, Telegram, Correo, etc.):
+
+- **Contrato de Dominio:** `Compartidor` en `shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/domain/platform/Compartidor.kt`.
+  ```kotlin
+  interface Compartidor {
+      fun compartir(texto: String)
+  }
+  ```
+- **Formateo de texto común:** `Producto.comoTextoParaCompartir()` genera el contenido descriptivo estándar: `"$nombre - ${formatearSoles(precio)} - Stock: $stock"`.
+- **Implementación Android:** `CompartidorAndroid.kt` lanza un `Intent(Intent.ACTION_SEND)` envuelto en `Intent.createChooser` y decorado con `FLAG_ACTIVITY_NEW_TASK` usando el `Context` de Android.
+- **Implementación iOS:** `CompartidorIos.kt` instancia un `UIActivityViewController` y lo presenta sobre el `rootViewController` de la ventana activa de `UIKit`.
+- **Inyección con Koin:** Ambos módulos de plataforma (`PlatformModule.android.kt` y `PlatformModule.ios.kt`) proveen la instancia de `Compartidor`. El `DetalleProductoViewModel` recibe la interfaz `Compartidor` por constructor, y la pantalla composable `DetalleProductoScreen` solo emite un evento lambda `onCompartir`, manteniendo **cero importaciones de Android o UIKit** en la capa común.
+
+### 3. Mapa de archivos y arquitectura
+
+| Capa / Módulo | Archivo | Responsabilidad |
+|---|---|---|
+| **Común (Platform)** | `shared/.../platform/Formato.kt` | Declaración `expect fun formatearSoles` |
+| **Android (Platform)** | `shared/.../platform/Formato.android.kt` | Implementación `actual` con `NumberFormat` |
+| **iOS (Platform)** | `shared/.../platform/Formato.ios.kt` | Implementación `actual` con `NSNumberFormatter` |
+| **Común (Domain)** | `shared/.../domain/platform/Compartidor.kt` | Interfaz abstracta para compartir texto |
+| **Común (UseCase)** | `shared/.../domain/usecase/TextoParaCompartir.kt` | Construcción del mensaje a compartir |
+| **Android (Platform)** | `shared/.../platform/CompartidorAndroid.kt` | Implementación con `Intent.ACTION_SEND` |
+| **iOS (Platform)** | `shared/.../platform/CompartidorIos.kt` | Implementación con `UIActivityViewController` |
+| **Android (DI)** | `shared/.../di/PlatformModule.android.kt` | Registro Koin de `CompartidorAndroid` |
+| **iOS (DI)** | `shared/.../di/PlatformModule.ios.kt` | Registro Koin de `CompartidorIos` |
+| **Común (Presentation)** | `shared/.../presentation/producto/ProductoUi.kt` | Modelo UI con precio formateado |
+| **Común (Presentation)** | `shared/.../presentation/detalle/DetalleProductoViewModel.kt` | Orquestación del estado de detalle y compartir |
+| **Común (Presentation)** | `shared/.../presentation/detalle/DetalleProductoScreen.kt` | Vista Compose pura con botón nativo de Compartir |
+| **Común (Navigation)** | `shared/.../navigation/Screen.kt` | Ruta `Screen.DetalleProducto(productoId)` |
+| **Común (Tests)** | `shared/src/commonTest/.../DetalleProductoViewModelTest.kt` | Pruebas unitarias de ViewModel, Formato y Fake |
+
+### 4. Interoperabilidad Kotlin-Swift
+
+Kotlin Multiplatform compila el código compartido para iOS generando un framework nativo (`Shared.framework`) mediante el backend de Kotlin/Native:
+- **Puente Objective-C/Swift:** Kotlin/Native genera un encabezado `.h` que expone las clases y funciones públicas de Kotlin como clases y protocolos de Objective-C accesibles directamente desde Swift.
+- **Acceso a APIs de Apple:** A través del paquete `platform.*` (como `platform.Foundation.*` y `platform.UIKit.*`), Kotlin/Native cuenta con bindings directos y de cero sobrecoste (zero-overhead) a las APIs nativas de iOS en tiempo de compilación.
+- **Ciclo de vida en Swift:** En `iosApp/iOSApp.swift`, la aplicación inicializa Koin mediante `HelperKt.doInitKoin()` y monta la vista raíz `ComposeViewProvider` en SwiftUI, manteniendo la paridad arquitectónica total con Android.
