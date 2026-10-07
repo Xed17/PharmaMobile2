@@ -58,7 +58,7 @@ class ProductoViewModel(
                             fase = if (productos.isEmpty()) {
                                 ProductoUiState.Fase.SinProductos
                             } else {
-                                ProductoUiState.Fase.ConProductos(productos)
+                                ProductoUiState.Fase.ConProductos(productos.map { it.toUi() })
                             }
                         )
                     }
@@ -101,13 +101,13 @@ class ProductoViewModel(
         }
     }
 
-    fun seleccionarParaEditar(producto: Producto) {
+    fun seleccionarParaEditar(producto: ProductoUi) {
         _uiState.update {
             it.copy(
                 formulario = FormularioProducto(
                     id = producto.id,
                     nombre = producto.nombre,
-                    precio = producto.precio.toString(),
+                    precio = producto.precioNumerico.toString(),
                     stock = producto.stock.toString(),
                     categoriaId = producto.categoriaId,
                     categoriaNombre = producto.categoriaNombre ?: "General"
@@ -115,6 +115,10 @@ class ProductoViewModel(
                 mensajeExito = null
             )
         }
+    }
+
+    fun seleccionarParaEditar(producto: Producto) {
+        seleccionarParaEditar(producto.toUi())
     }
 
     fun cancelarEdicion() {

@@ -56,14 +56,16 @@ private val CATEGORIAS_DISPONIBLES = listOf(
 
 @Composable
 fun ProductoScreen(
-    viewModel: ProductoViewModel
+    viewModel: ProductoViewModel,
+    onVerDetalle: (Long) -> Unit = {},
+    onCompartir: ((ProductoUi) -> Unit)? = null
 ) {
     val state by viewModel.uiState.collectAsState()
     val form = state.formulario
     val scrollState = rememberScrollState()
 
     var tabSeleccionada by remember { mutableStateOf(0) }
-    var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
+    var productoAEliminar by remember { mutableStateOf<ProductoUi?>(null) }
 
     val estaOperando = state.operacion is ProductoUiState.Operacion.EnCurso
 
@@ -383,6 +385,8 @@ fun ProductoScreen(
                             ProductoItemCard(
                                 producto = prod,
                                 estaOperando = estaOperando,
+                                onVerDetalle = { onVerDetalle(prod.id) },
+                                onCompartir = { onCompartir?.invoke(prod) },
                                 onEditar = { viewModel.seleccionarParaEditar(prod) },
                                 onEliminar = { productoAEliminar = prod }
                             )
@@ -424,8 +428,10 @@ fun ProductoScreen(
 
 @Composable
 private fun ProductoItemCard(
-    producto: Producto,
+    producto: ProductoUi,
     estaOperando: Boolean,
+    onVerDetalle: () -> Unit,
+    onCompartir: () -> Unit,
     onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
@@ -459,9 +465,10 @@ private fun ProductoItemCard(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Precio: S/ ${((producto.precio * 100).toLong() / 100.0)}",
+                        text = "Precio: ${producto.precio}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = "Stock disponible: ${producto.stock} unidades",
@@ -505,28 +512,46 @@ private fun ProductoItemCard(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // Botones Editar y Eliminar
+            // Botones de acción: Detalle, Compartir, Editar, Eliminar
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedButton(
-                    onClick = onEditar,
-                    enabled = !estaOperando,
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
-                    Text("Editar")
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(
+                        onClick = onVerDetalle,
+                        enabled = !estaOperando
+                    ) {
+                        Text("Detalle")
+                    }
+                    Button(
+                        onClick = onCompartir,
+                        enabled = !estaOperando,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Text("Compartir")
+                    }
                 }
 
-                Button(
-                    onClick = onEliminar,
-                    enabled = !estaOperando,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text("Eliminar")
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(
+                        onClick = onEditar,
+                        enabled = !estaOperando
+                    ) {
+                        Text("Editar")
+                    }
+                    Button(
+                        onClick = onEliminar,
+                        enabled = !estaOperando,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Eliminar")
+                    }
                 }
             }
         }
