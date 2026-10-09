@@ -175,26 +175,58 @@ Para permitir compartir la ficha de un medicamento hacia aplicaciones externas (
 - **Implementación iOS:** `CompartidorIos.kt` instancia un `UIActivityViewController` y lo presenta sobre el `rootViewController` de la ventana activa de `UIKit`.
 - **Inyección con Koin:** Ambos módulos de plataforma (`PlatformModule.android.kt` y `PlatformModule.ios.kt`) proveen la instancia de `Compartidor`. El `DetalleProductoViewModel` recibe la interfaz `Compartidor` por constructor, y la pantalla composable `DetalleProductoScreen` solo emite un evento lambda `onCompartir`, manteniendo **cero importaciones de Android o UIKit** en la capa común.
 
-### 3. Mapa de archivos y arquitectura
+### 3. Información del Dispositivo (`expect class` / `actual class`)
+
+Para consultar el sistema operativo y su versión sin depender de librerías externas ni solicitar permisos sensibles:
+
+- **Declaración común (`expect class`):** `shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.kt`
+  ```kotlin
+  expect class InfoDispositivo() {
+      val sistema: String
+      val version: String
+  }
+  ```
+- **Implementación Android (`actual class`):** `shared/src/androidMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.android.kt`
+  Utiliza `android.os.Build.VERSION.RELEASE` retornando `"Android"` y la versión del sistema (ej. `"14"`).
+- **Implementación iOS (`actual class`):** `shared/src/iosMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.ios.kt`
+  Utiliza `platform.UIKit.UIDevice.currentDevice.systemName` y `systemVersion` retornando `"iOS"` y su versión.
+- **Inyección con Koin:** Registrado como singleton común en `AppModule.kt` (`single { InfoDispositivo() }`).
+- **Pantalla «Acerca de»:** Presentada en `shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/acercade/AcercaDeScreen.kt`, accesible directamente desde el Navigation Drawer en todas las plataformas.
+
+### 4. Código específico de plataforma (Inventario S09)
+
+| Capacidad | Contrato Común (`commonMain`) | Android (`androidMain`) | iOS (`iosMain`) |
+|---|---|---|---|
+| **Formato de moneda** | `pe.edu.upeu.pharmamobile2.platform.Formato.kt`<br>`expect fun formatearSoles(valor: Double): String` | `Formato.android.kt`<br>`NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-PE"))` | `Formato.ios.kt`<br>`NSNumberFormatter` con `NSNumberFormatterCurrencyStyle` y `es_PE` |
+| **Compartir producto** | `pe.edu.upeu.pharmamobile2.domain.platform.Compartidor.kt`<br>`interface Compartidor { fun compartir(texto: String) }` | `CompartidorAndroid.kt`<br>`Intent(Intent.ACTION_SEND)`, `createChooser`, `FLAG_ACTIVITY_NEW_TASK` | `CompartidorIos.kt`<br>`UIActivityViewController` sobre `keyWindow.rootViewController` |
+| **Módulo de inyección** | `pe.edu.upeu.pharmamobile2.di.PlatformModule.kt`<br>`expect val platformModule: Module` | `PlatformModule.android.kt`<br>Koin `module` resolviendo `androidContext()` para `Compartidor` | `PlatformModule.ios.kt`<br>Koin `module` instanciando `CompartidorIos()` puro |
+| **Información del dispositivo** | `pe.edu.upeu.pharmamobile2.platform.InfoDispositivo.kt`<br>`expect class InfoDispositivo()` | `InfoDispositivo.android.kt`<br>`android.os.Build.VERSION.RELEASE` | `InfoDispositivo.ios.kt`<br>`platform.UIKit.UIDevice.currentDevice.systemVersion` |
+
+### 5. Mapa de archivos y arquitectura
 
 | Capa / Módulo | Archivo | Responsabilidad |
 |---|---|---|
 | **Común (Platform)** | `shared/.../platform/Formato.kt` | Declaración `expect fun formatearSoles` |
 | **Android (Platform)** | `shared/.../platform/Formato.android.kt` | Implementación `actual` con `NumberFormat` |
 | **iOS (Platform)** | `shared/.../platform/Formato.ios.kt` | Implementación `actual` con `NSNumberFormatter` |
+| **Común (Platform)** | `shared/.../platform/InfoDispositivo.kt` | Declaración `expect class InfoDispositivo` |
+| **Android (Platform)** | `shared/.../platform/InfoDispositivo.android.kt` | Implementación `actual` con `Build.VERSION.RELEASE` |
+| **iOS (Platform)** | `shared/.../platform/InfoDispositivo.ios.kt` | Implementación `actual` con `UIDevice.systemVersion` |
 | **Común (Domain)** | `shared/.../domain/platform/Compartidor.kt` | Interfaz abstracta para compartir texto |
 | **Común (UseCase)** | `shared/.../domain/usecase/TextoParaCompartir.kt` | Construcción del mensaje a compartir |
 | **Android (Platform)** | `shared/.../platform/CompartidorAndroid.kt` | Implementación con `Intent.ACTION_SEND` |
 | **iOS (Platform)** | `shared/.../platform/CompartidorIos.kt` | Implementación con `UIActivityViewController` |
 | **Android (DI)** | `shared/.../di/PlatformModule.android.kt` | Registro Koin de `CompartidorAndroid` |
 | **iOS (DI)** | `shared/.../di/PlatformModule.ios.kt` | Registro Koin de `CompartidorIos` |
+| **Común (DI)** | `shared/.../di/AppModule.kt` | Registro Koin de `deviceModule` e `InfoDispositivo` |
 | **Común (Presentation)** | `shared/.../presentation/producto/ProductoUi.kt` | Modelo UI con precio formateado |
 | **Común (Presentation)** | `shared/.../presentation/detalle/DetalleProductoViewModel.kt` | Orquestación del estado de detalle y compartir |
 | **Común (Presentation)** | `shared/.../presentation/detalle/DetalleProductoScreen.kt` | Vista Compose pura con botón nativo de Compartir |
-| **Común (Navigation)** | `shared/.../navigation/Screen.kt` | Ruta `Screen.DetalleProducto(productoId)` |
-| **Común (Tests)** | `shared/src/commonTest/.../DetalleProductoViewModelTest.kt` | Pruebas unitarias de ViewModel, Formato y Fake |
+| **Común (Presentation)** | `shared/.../presentation/acercade/AcercaDeScreen.kt` | Pantalla «Acerca de» mostrando info del dispositivo |
+| **Común (Navigation)** | `shared/.../navigation/Screen.kt` | Rutas `Screen.DetalleProducto` y `Screen.AcercaDe` |
+| **Común (Tests)** | `shared/src/commonTest/.../DetalleProductoViewModelTest.kt` | Pruebas unitarias de ViewModel, Formato, Fake e InfoDispositivo |
 
-### 4. Interoperabilidad Kotlin-Swift
+### 6. Interoperabilidad Kotlin-Swift
 
 Kotlin Multiplatform compila el código compartido para iOS generando un framework nativo (`Shared.framework`) mediante el backend de Kotlin/Native:
 - **Puente Objective-C/Swift:** Kotlin/Native genera un encabezado `.h` que expone las clases y funciones públicas de Kotlin como clases y protocolos de Objective-C accesibles directamente desde Swift.

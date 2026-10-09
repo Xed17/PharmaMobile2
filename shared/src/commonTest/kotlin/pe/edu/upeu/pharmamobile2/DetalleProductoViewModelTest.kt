@@ -143,4 +143,13 @@ class DetalleProductoViewModelTest {
         assertEquals(formatearSoles(5.0), ui.precio)
         assertEquals(40, ui.stock)
     }
+
+    @Test
+    fun testInfoDispositivoRetornaValoresNoVacios() {
+        val info = pe.edu.upeu.pharmamobile2.platform.InfoDispositivo()
+        assertNotNull(info.sistema)
+        assertTrue(info.sistema.isNotBlank(), "El sistema operativo no debe estar vacío")
+        assertNotNull(info.version)
+        assertTrue(info.version.isNotBlank(), "La versión del sistema no debe estar vacía")
+    }
 }

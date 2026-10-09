@@ -53,7 +53,11 @@ val presentationModule = module {
     }
 }
 
+val deviceModule = module {
+    single { pe.edu.upeu.pharmamobile2.platform.InfoDispositivo() }
+}
+
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {
     appDeclaration()
-    modules(dataModule, domainModule, presentationModule, platformModule)
+    modules(dataModule, domainModule, presentationModule, deviceModule, platformModule)
 }

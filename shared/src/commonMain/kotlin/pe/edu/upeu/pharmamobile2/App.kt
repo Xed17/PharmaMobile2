@@ -40,9 +40,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinContext
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.pharmamobile2.navigation.Screen
 import pe.edu.upeu.pharmamobile2.navigation.tituloPantalla
+import pe.edu.upeu.pharmamobile2.platform.InfoDispositivo
+import pe.edu.upeu.pharmamobile2.presentation.acercade.AcercaDeScreen
 import pe.edu.upeu.pharmamobile2.presentation.cliente.ClientesScreen
 import pe.edu.upeu.pharmamobile2.presentation.detalle.DetalleProductoScreen
 import pe.edu.upeu.pharmamobile2.presentation.detalle.DetalleProductoViewModel
@@ -186,6 +189,12 @@ fun App() {
                                 icon = { Text("📋") },
                                 label = { Text("Pedidos") }
                             )
+                            NavigationRailItem(
+                                selected = pantallaActual is Screen.AcercaDe,
+                                onClick = { pantallaActual = Screen.AcercaDe },
+                                icon = { Text("ℹ️") },
+                                label = { Text("Acerca de") }
+                            )
                         }
 
                         Box(modifier = Modifier.weight(1f)) {
@@ -273,6 +282,11 @@ private fun DrawerNavigationItems(
         selected = pantallaActual is Screen.Pedidos,
         onClick = { onSelectScreen(Screen.Pedidos) }
     )
+    NavigationDrawerItem(
+        label = { Text("Acerca de") },
+        selected = pantallaActual is Screen.AcercaDe,
+        onClick = { onSelectScreen(Screen.AcercaDe) }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -337,6 +351,10 @@ private fun AppScaffold(
                 }
                 is Screen.Clientes -> ClientesScreen()
                 is Screen.Pedidos -> PedidosScreen()
+                is Screen.AcercaDe -> {
+                    val infoDispositivo: InfoDispositivo = koinInject()
+                    AcercaDeScreen(infoDispositivo = infoDispositivo)
+                }
             }
         }
     }
