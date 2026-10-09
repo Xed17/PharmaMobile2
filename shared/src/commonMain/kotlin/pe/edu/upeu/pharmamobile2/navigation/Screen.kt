@@ -6,6 +6,7 @@ sealed class Screen {
     data class DetalleProducto(val productoId: Long) : Screen()
     data object Clientes : Screen()
     data object Pedidos : Screen()
+    data object AcercaDe : Screen()
 }
 
 fun tituloPantalla(screen: Screen): String = when (screen) {
@@ -14,4 +15,5 @@ fun tituloPantalla(screen: Screen): String = when (screen) {
     is Screen.DetalleProducto -> "Detalle de Producto"
     is Screen.Clientes -> "Clientes"
     is Screen.Pedidos -> "Pedidos"
+    is Screen.AcercaDe -> "Acerca de"
 }
