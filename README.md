@@ -231,4 +231,98 @@ Para consultar el sistema operativo y su versión sin depender de librerías ext
 Kotlin Multiplatform compila el código compartido para iOS generando un framework nativo (`Shared.framework`) mediante el backend de Kotlin/Native:
 - **Puente Objective-C/Swift:** Kotlin/Native genera un encabezado `.h` que expone las clases y funciones públicas de Kotlin como clases y protocolos de Objective-C accesibles directamente desde Swift.
 - **Acceso a APIs de Apple:** A través del paquete `platform.*` (como `platform.Foundation.*` y `platform.UIKit.*`), Kotlin/Native cuenta con bindings directos y de cero sobrecoste (zero-overhead) a las APIs nativas de iOS en tiempo de compilación.
-- **Ciclo de vida en Swift:** En `iosApp/iOSApp.swift`, la aplicación inicializa Koin mediante `HelperKt.doInitKoin()` y monta la vista raíz `ComposeViewProvider` en SwiftUI, manteniendo la paridad arquitectónica total con Android.
+- **Ciclo de vida en Swift:** En `iosApp/iOSApp.swift`, la aplicación inicializa Koin mediante `HelperKt.doInitKoin()` y monta la vista raíz `ComposeViewProvider` en SwiftUI, manteniendo la paridad arquitectónica total con Android.
+
+---
+
+# Autenticación JWT y Almacenamiento Seguro (Sesión 10)
+
+## Rama de trabajo
+`feature/auth-jwt-chambilla`
+
+## 1. Flujo de Autenticación y Ciclo de Vida
+```text
+Usuario escribe credenciales (o selecciona Chip de prueba)
+             ↓
+PharmaMobile llama a POST /api/v1/auth/login
+             ↓
+Recibe JWT, roles y permisos (HTTP 200)
+             ↓
+Guarda token de forma cifrada (AlmacenSeguro: EncryptedSharedPreferences / Keychain)
+             ↓
+Ktor Auth Plugin adjunta automáticamente "Authorization: Bearer <token>"
+             ↓
+Al reiniciar la app: Recupera token y consulta GET /api/v1/auth/me
+             ↓
+• Si token es válido (200) → Restaura sesión automáticamente
+• Si token expiró (401) → Elimina token, purga caché bearer y muestra login con aviso
+• Si falta permisos (403) → Mantiene sesión intacta y notifica con Snackbar
+• Si pulsa "Cerrar sesión" → Borra token, limpia caché y vuelve a Login
+```
+
+## 2. Endpoints Utilizados
+| Operación | Método | Endpoint | Cabecera / Body | Código Exitoso | Respuestas de Error |
+|---|:---:|---|---|:---:|---|
+| **Iniciar Sesión** | `POST` | `/api/v1/auth/login` | Body: `{ "username": "...", "password": "..." }` | `200 OK` (Token JWT, expiración, roles, permisos) | `400` (Invalido), `401` (Credenciales incorrectas) |
+| **Usuario Actual** | `GET` | `/api/v1/auth/me` | `Authorization: Bearer <token>` | `200 OK` (`UsuarioActualDto`) | `401` (Token expirado/inválido) |
+| **Listar Productos** | `GET` | `/api/v1/productos` | `Authorization: Bearer <token>` | `200 OK` | `401` (No autenticado) |
+| **Crear Producto** | `POST` | `/api/v1/productos` | `Authorization: Bearer <token>` | `201 Created` | `401` (No autenticado), `403` (Vendedor sin `CATALOGO_ESCRIBIR`) |
+| **Listar Clientes** | `GET` | `/api/v1/clientes` | `Authorization: Bearer <token>` | `200 OK` | `401` (No autenticado), `403` (Almacén sin `CLIENTES_LEER`) |
+
+## 3. Cuentas de Prueba (Laboratorio PharmaSoft)
+| Usuario | Contraseña | Rol Principal | Permisos Clave | Comportamiento Esperado |
+|---|---|---|---|---|
+| `admin` | `Admin123` | `ROLE_ADMIN` | `CATALOGO_LEER`, `CATALOGO_ESCRIBIR`, `CLIENTES_LEER`, `CLIENTES_ESCRIBIR`, `REPORTES_VER`, `VENTAS_REGISTRAR` | Acceso total a todas las operaciones (200 / 201). |
+| `vendedor` | `Vendedor123` | `ROLE_VENDEDOR` | `CATALOGO_LEER`, `CLIENTES_LEER`, `CLIENTES_ESCRIBIR`, `VENTAS_REGISTRAR` | Puede ver catálogo y gestionar clientes. Al intentar crear un producto recibe **403 Forbidden**. |
+| `almacen` | `Almacen123` | `ROLE_ALMACEN` | `CATALOGO_LEER`, `CATALOGO_ESCRIBIR` | Puede ver y modificar catálogo. Al intentar consultar o registrar clientes recibe **403 Forbidden**. |
+
+> **Nota:** La pantalla de inicio de sesión (`LoginScreen`) incluye chips de autocompletado rápido para alternar entre estas cuentas en un solo toque durante evaluaciones y pruebas.
+
+## 4. Almacenamiento Seguro por Plataforma
+- **Android (`AlmacenSeguroAndroid`):** Utiliza `EncryptedSharedPreferences` respaldado por `MasterKey` con esquema de cifrado de claves `AES256_SIV` y valores `AES256_GCM`. El token JWT nunca se almacena en texto plano.
+- **iOS (`AlmacenSeguroIos`):** Implementación nativa usando la API C-Interop de Apple **Keychain** (`SecItemAdd`, `SecItemCopyMatching`, `SecItemDelete`) bajo la clase `kSecClassGenericPassword`, garantizando almacenamiento seguro en el enclave del sistema operativo.
+- **Contrato Común:** Interfaz `AlmacenSeguro` inyectada vía Koin como singleton en cada plataforma (`PlatformModule`).
+
+## 5. Configuración Ktor Client (Bearer Token Interceptor)
+- **Plugin `Auth`:** Configurado con `bearer { loadTokens { ... } }`, leyendo el token desde `AlmacenSeguro`.
+- **`sendWithoutRequest`:** Envía la cabecera `Authorization: Bearer <token>` proactivamente en todas las rutas salvo `/api/v1/auth/login`.
+- **Saneamiento de Cabeceras (`Logging`):**
+  ```kotlin
+  sanitizeHeader { header ->
+      header.equals(HttpHeaders.Authorization, ignoreCase = true)
+  }
+  ```
+  Evita fugas de tokens JWT en los logs de la consola o logcat.
+- **Invalidación de Caché:** Función `HttpClient.limpiarTokensAuth()` que purga las instancias de `BearerAuthProvider` tras login o logout para evitar reutilizar tokens antiguos.
+
+## 6. Manejo Distintivo de 401 y 403
+- **HTTP 401 Unauthorized:** Indica credenciales inválidas (en login) o token expirado/manipulado. Se elimina el token de `AlmacenSeguro`, se limpia la caché del cliente Ktor, se vacía el estado observable de sesión y la aplicación transiciona inmediatamente a la pantalla de Login mostrando el aviso: *"Su sesión ha expirado. Por favor inicie sesión nuevamente."*
+- **HTTP 403 Forbidden:** Indica que el usuario está autenticado válidamente pero su rol carece del permiso para la operación (por ejemplo, `almacen` intentando listar clientes, o `vendedor` intentando registrar un producto). **La sesión NO se destruye, el token permanece en el almacén**, y la UI emite un mensaje en Snackbar: *"No tienes permiso para esta operación (403)"*.
+
+## 7. Instrucciones de Ejecución y Pruebas en Android Studio
+1. **Asegurar Backend Activo:**
+   - PharmaSoft debe estar ejecutándose en `http://localhost:8080/`.
+   - Desde el emulador Android, se accede transparentemente mediante `http://10.0.2.2:8080/`.
+2. **Abrir el Proyecto en Android Studio:**
+   - Abrir la carpeta raíz `PharmaMobile2`.
+   - Esperar a que Gradle sincronice (`Sync Project with Gradle Files`).
+3. **Ejecutar Pruebas Unitarias:**
+   - En la terminal de Android Studio o PowerShell:
+     ```powershell
+     .\gradlew :shared:testAndroidHostTest
+     ```
+   - Las 42 pruebas unitarias (`PermisosTest`, `AuthRepositorioRestTest`, `SesionViewModelTest`, `DominioPharmaMobileTest`, `ProductoViewModelTest`, etc.) deben ejecutarse con **100% de éxito**.
+4. **Desplegar en Emulador:**
+   - Seleccionar la configuración de ejecución `androidApp`.
+   - Elegir el dispositivo virtual (Pixel 7 con API 34+).
+   - Presionar `Run` (Shift + F10).
+5. **Casos de Prueba Autónomos a Validar:**
+   - **Caso A (Almacenamiento y Persistencia):** Iniciar sesión con `admin`. Navegar a Productos. Cerrar completamente la aplicación desde el multitarea de Android. Volver a abrir la app: la pantalla de carga verifica el token y restaura la sesión directamente en el inicio sin pedir contraseña.
+   - **Caso B (Cierre de Sesión):** Abrir el menú lateral (Drawer) y pulsar "Cerrar sesión" (o el icono de puerta en la barra superior). La app limpia el almacenamiento seguro y regresa al Login. Al pulsar el botón Atrás de Android, la app se minimiza y no vuelve a las pantallas privadas.
+   - **Caso C (Control de Acceso 403 vs 200):**
+     1. Iniciar sesión con `almacen`.
+     2. Ir a la sección Clientes y pulsar *"📡 Consultar Clientes en Servidor"*. Aparece el mensaje de error `403 Forbidden` y el Snackbar de permisos.
+     3. Regresar a Productos: los productos siguen cargando normalmente (HTTP 200), confirmando que la sesión se mantuvo.
+     4. Cerrar sesión y entrar con `vendedor`.
+     5. Ir a Clientes y pulsar la misma consulta: responde `HTTP 200 OK` con acceso concedido.
+
