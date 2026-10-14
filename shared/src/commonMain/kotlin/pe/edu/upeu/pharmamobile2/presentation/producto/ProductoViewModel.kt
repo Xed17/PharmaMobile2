@@ -269,6 +269,8 @@ class ProductoViewModel(
     private fun mensajeDe(error: Any): String = when (error) {
         is ErrorApi.NoEncontrado -> "El recurso solicitado no existe (404)."
         is ErrorApi.Conflicto -> "Conflicto: ${error.mensaje}"
+        is ErrorApi.NoAutorizado -> "Su sesión ha expirado o no es válida (401)."
+        is ErrorApi.SinPermisos -> error.mensaje.ifBlank { "No tienes permiso para esta operación (403)." }
         is ErrorApi.Servidor -> "El servidor presentó un problema (500). Intente nuevamente."
         is ErrorApi.SinConexion -> "No hay conexión de red disponible. Verifique su conexión."
         is ErrorApi.TiempoAgotado -> "Tiempo de espera agotado al conectar con el servidor."

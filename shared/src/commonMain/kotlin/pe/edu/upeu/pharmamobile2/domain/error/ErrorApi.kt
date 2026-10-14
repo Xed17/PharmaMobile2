@@ -7,6 +7,8 @@ sealed interface ErrorApi {
 
     data object NoEncontrado : ErrorApi
     data class Conflicto(val mensaje: String) : ErrorApi
+    data object NoAutorizado : ErrorApi
+    data class SinPermisos(val mensaje: String = "No tienes permiso para esta operación") : ErrorApi
     data object Servidor : ErrorApi
     data object SinConexion : ErrorApi
     data object TiempoAgotado : ErrorApi

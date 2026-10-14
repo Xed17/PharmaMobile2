@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import io.ktor.client.request.get
+import kotlinx.coroutines.launch
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -133,6 +137,79 @@ fun ClientesScreen() {
                 } else {
                     MaterialTheme.colorScheme.primary
                 }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        androidx.compose.material3.HorizontalDivider()
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Acceso a Clientes en Servidor (API)",
+            style = MaterialTheme.typography.titleMedium
+        )
+        Text(
+            text = "Prueba de permisos RBAC: admin y vendedor tienen acceso (200 OK); almacén no tiene permiso (403 Forbidden).",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        val client: io.ktor.client.HttpClient = org.koin.compose.koinInject()
+        val authRepo: pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository = org.koin.compose.koinInject()
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
+        var consultandoServidor by remember { mutableStateOf(false) }
+        var mensajeServidor by remember { mutableStateOf("") }
+        var esErrorServidor by remember { mutableStateOf(false) }
+
+        androidx.compose.material3.OutlinedButton(
+            onClick = {
+                scope.launch {
+                    consultandoServidor = true
+                    try {
+                        val respuesta = client.get("api/v1/clientes")
+                        mensajeServidor = "Servidor respondió: HTTP ${respuesta.status.value} OK. Acceso concedido."
+                        esErrorServidor = false
+                    } catch (e: io.ktor.client.plugins.ClientRequestException) {
+                        if (e.response.status.value == 403) {
+                            authRepo.notificar403("No tienes permiso para consultar clientes (403)")
+                            mensajeServidor = "HTTP 403 Forbidden: Sin permisos para consultar clientes."
+                            esErrorServidor = true
+                        } else if (e.response.status.value == 401) {
+                            authRepo.notificar401()
+                            mensajeServidor = "HTTP 401 Unauthorized: Sesión expirada."
+                            esErrorServidor = true
+                        } else {
+                            mensajeServidor = "Error HTTP ${e.response.status.value}: ${e.message}"
+                            esErrorServidor = true
+                        }
+                    } catch (e: Exception) {
+                        mensajeServidor = "Error de conexión: ${e.message}"
+                        esErrorServidor = true
+                    } finally {
+                        consultandoServidor = false
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !consultandoServidor
+        ) {
+            if (consultandoServidor) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Consultando...")
+            } else {
+                Text("📡 Consultar Clientes en Servidor (Test 403/200)")
+            }
+        }
+
+        if (mensajeServidor.isNotBlank()) {
+            Text(
+                text = mensajeServidor,
+                color = if (esErrorServidor) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
