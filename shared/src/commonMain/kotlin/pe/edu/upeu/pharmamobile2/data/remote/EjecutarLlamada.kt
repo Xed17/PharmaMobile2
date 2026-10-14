@@ -46,6 +46,12 @@ private suspend fun traducirCliente(
             cuerpo?.validationErrors.orEmpty()
         )
 
+        401 -> ErrorApi.NoAutorizado
+
+        403 -> ErrorApi.SinPermisos(
+            cuerpo?.message ?: "No tienes permiso para esta operación"
+        )
+
         404 -> ErrorApi.NoEncontrado
 
         409 -> ErrorApi.Conflicto(
