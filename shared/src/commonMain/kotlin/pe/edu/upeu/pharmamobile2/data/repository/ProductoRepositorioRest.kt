@@ -26,6 +26,14 @@ open class ProductoRepositorioRest(
         }
     }
 
+    override fun observar(): kotlinx.coroutines.flow.Flow<List<Producto>> = kotlinx.coroutines.flow.flow {
+        emit(listar())
+    }
+
+    override suspend fun sincronizar() {
+        listar()
+    }
+
     override suspend fun listar(): List<Producto> = interceptarErroresAuth {
         ejecutarLlamada {
             api.listar().contenido.map { it.toDomain() }

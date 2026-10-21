@@ -14,10 +14,14 @@ import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobile2.domain.usecase.ActualizarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.EliminarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ListarProductosUseCase
+import pe.edu.upeu.pharmamobile2.domain.usecase.ObservarProductosUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ObtenerProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.RegistrarProductoUseCase
+import pe.edu.upeu.pharmamobile2.domain.usecase.SincronizarProductosUseCase
 
 class ProductoViewModel(
+    private val observarProductos: ObservarProductosUseCase,
+    private val sincronizarProductos: SincronizarProductosUseCase,
     private val listarProductos: ListarProductosUseCase,
     private val obtenerProducto: ObtenerProductoUseCase,
     private val registrarProducto: RegistrarProductoUseCase,
@@ -30,6 +34,8 @@ class ProductoViewModel(
         registrarUseCase: RegistrarProductoUseCase,
         repository: ProductoRepository
     ) : this(
+        observarProductos = ObservarProductosUseCase(repository),
+        sincronizarProductos = SincronizarProductosUseCase(repository),
         listarProductos = ListarProductosUseCase(repository),
         obtenerProducto = ObtenerProductoUseCase(repository),
         registrarProducto = registrarUseCase,
@@ -41,40 +47,55 @@ class ProductoViewModel(
     val uiState: StateFlow<ProductoUiState> = _uiState.asStateFlow()
 
     init {
-        cargarProductos()
+        iniciarObservacion()
+        sincronizar()
+    }
+
+    private fun iniciarObservacion() {
+        viewModelScope.launch {
+            observarProductos().collect { productos ->
+                val uiList = productos.map { it.toUi() }
+                val pendientes = uiList.count { it.esPendiente }
+                _uiState.update {
+                    it.copy(
+                        fase = if (uiList.isEmpty()) {
+                            ProductoUiState.Fase.SinProductos
+                        } else {
+                            ProductoUiState.Fase.ConProductos(uiList)
+                        },
+                        totalPendientes = pendientes
+                    )
+                }
+            }
+        }
+    }
+
+    fun sincronizar() {
+        if (_uiState.value.sincronizando) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(sincronizando = true, mensajeSincronizacion = null) }
+            try {
+                sincronizarProductos()
+                _uiState.update {
+                    it.copy(
+                        sincronizando = false,
+                        mensajeSincronizacion = "Catálogo sincronizado"
+                    )
+                }
+            } catch (e: Exception) {
+                val mensaje = mensajeDe(e)
+                _uiState.update {
+                    it.copy(
+                        sincronizando = false,
+                        mensajeSincronizacion = mensaje
+                    )
+                }
+            }
+        }
     }
 
     fun cargarProductos() {
-        viewModelScope.launch {
-            // Si la pantalla ya tiene productos visibles, conservamos la lista y no mostramos pantalla completa de carga
-            if (_uiState.value.fase !is ProductoUiState.Fase.ConProductos) {
-                _uiState.update { it.copy(fase = ProductoUiState.Fase.Cargando) }
-            }
-
-            listarProductos()
-                .onSuccess { productos ->
-                    _uiState.update {
-                        it.copy(
-                            fase = if (productos.isEmpty()) {
-                                ProductoUiState.Fase.SinProductos
-                            } else {
-                                ProductoUiState.Fase.ConProductos(productos.map { it.toUi() })
-                            }
-                        )
-                    }
-                }
-                .onFailure { fallo ->
-                    val mensaje = mensajeDe(fallo)
-                    _uiState.update {
-                        // Si ya habían productos, no destruimos la lista, informamos operación fallida
-                        if (it.fase is ProductoUiState.Fase.ConProductos) {
-                            it.copy(operacion = ProductoUiState.Operacion.Fallida(mensaje))
-                        } else {
-                            it.copy(fase = ProductoUiState.Fase.Error(mensaje))
-                        }
-                    }
-                }
-        }
+        sincronizar()
     }
 
     fun actualizarNombre(valor: String) {
@@ -171,7 +192,6 @@ class ProductoViewModel(
                         mensajeExito = "Producto registrado correctamente"
                     )
                 }
-                cargarProductos()
             }
             .onFailure { fallo ->
                 manejarFallo(fallo)
@@ -208,7 +228,6 @@ class ProductoViewModel(
                         mensajeExito = "Producto actualizado correctamente"
                     )
                 }
-                cargarProductos()
             }
             .onFailure { fallo ->
                 manejarFallo(fallo)
@@ -228,7 +247,6 @@ class ProductoViewModel(
                         mensajeExito = "Producto eliminado correctamente"
                     )
                 }
-                cargarProductos()
             }
             .onFailure { fallo ->
                 manejarFallo(fallo)

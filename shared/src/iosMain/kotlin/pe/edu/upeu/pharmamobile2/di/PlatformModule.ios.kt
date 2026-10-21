@@ -7,6 +7,8 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguro
 import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguroIos
+import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriver
+import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriverIos
 import pe.edu.upeu.pharmamobile2.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobile2.platform.CompartidorIos
 
@@ -15,5 +17,6 @@ actual val platformModule: Module = module {
     single(named("baseUrl")) { "http://localhost:8080/" }
     single<Compartidor> { CompartidorIos() }
     single<AlmacenSeguro> { AlmacenSeguroIos() }
+    single<CreadorDeDriver> { CreadorDeDriverIos() }
 }
 
