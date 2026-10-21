@@ -15,6 +15,9 @@ import pe.edu.upeu.pharmamobile2.data.repository.AuthRepositorioRest
 import pe.edu.upeu.pharmamobile2.data.repository.ProductoRepositorioRest
 import pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository
 import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
+import pe.edu.upeu.pharmamobile2.data.repository.ProductoRepositoryOffline
+import pe.edu.upeu.pharmamobile2.domain.usecase.ObservarProductosUseCase
+import pe.edu.upeu.pharmamobile2.domain.usecase.SincronizarProductosUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ActualizarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.CerrarSesionUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.EliminarProductoUseCase
@@ -46,7 +49,8 @@ val dataModule = module {
     }
     single<ProductoApi> { ProductoApi(get()) }
     single<ProductoRepository> {
-        ProductoRepositorioRest(
+        ProductoRepositoryOffline(
+            local = get(),
             api = get(),
             categoriaPorDefecto = 26L,
             authRepository = get()
@@ -55,6 +59,8 @@ val dataModule = module {
 }
 
 val domainModule = module {
+    factory { ObservarProductosUseCase(get()) }
+    factory { SincronizarProductosUseCase(get()) }
     factory { ListarProductosUseCase(get()) }
     factory { ObtenerProductoUseCase(get()) }
     factory { RegistrarProductoUseCase(get()) }
