@@ -177,11 +177,9 @@ fun PedidosScreen() {
 
         // Cálculo dinámico de Subtotal
         val cantidadInt = cantidad.toIntOrNull() ?: 0
-        val subtotalCalculado = if (productoSeleccionado != null && cantidadInt > 0) {
-            productoSeleccionado!!.precio * cantidadInt
-        } else {
-            0.0
-        }
+        val subtotalCalculado = productoSeleccionado?.let { prod ->
+            if (cantidadInt > 0) prod.precio * cantidadInt else 0.0
+        } ?: 0.0
 
         Text(
             text = "Subtotal: S/ ${if (subtotalCalculado > 0) ((subtotalCalculado * 100).toLong() / 100.0) else "0.00"}",
@@ -210,20 +208,20 @@ fun PedidosScreen() {
                     esError = true
                 } else {
                     val cantidadSolicitada = cantidad.toInt()
-                    val nuevoPedido = InMemoryRepository.registrarPedido(
+                        val nuevoPedido = InMemoryRepository.registrarPedido(
                         cliente = clienteSeleccionado!!,
                         producto = productoSeleccionado!!,
-                        cantidad = cantidadSolicitada
-                    )
+                            cantidad = cantidadSolicitada
+                        )
 
-                    mensaje = "Pedido #${nuevoPedido.id} registrado con éxito. Total: S/ ${((subtotalCalculado * 100).toLong() / 100.0)}"
-                    esError = false
+                        mensaje = "Pedido #${nuevoPedido.id} registrado con éxito. Total: S/ ${((subtotalCalculado * 100).toLong() / 100.0)}"
+                        esError = false
 
-                    // Limpieza del formulario
-                    clienteSeleccionado = null
-                    productoSeleccionado = null
-                    cantidad = ""
-                    intentoRegistrar = false
+                        // Limpieza del formulario
+                        clienteSeleccionado = null
+                        productoSeleccionado = null
+                        cantidad = ""
+                        intentoRegistrar = false
                 }
             },
             modifier = Modifier.fillMaxWidth()

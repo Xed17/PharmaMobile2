@@ -25,17 +25,6 @@ fun describirResultado(resultado: ResultadoProductos): String {
     }
 }
 
-fun observarEstados(): Flow<String> = flow {
-    emit("Iniciando")
-    delay(1_000)
-    emit("Finalizado")
-}
-
-suspend fun probarEstados() {
-    observarEstados().collect { estado ->
-        println(estado)
-    }
-}
 
 fun observarProductos(): Flow<List<Producto>> = flow {
     emit(emptyList())
@@ -43,26 +32,6 @@ fun observarProductos(): Flow<List<Producto>> = flow {
     emit(productosSimulados)
 }
 
-suspend fun probarObservacionProductos() {
-    observarProductos().collect { productos ->
-        println("Productos recibidos: $productos")
-    }
-}
-
-fun observarCambioDeStock(): Flow<List<Producto>> = flow {
-    emit(productosSimulados)
-    delay(1_000)
-
-    val productoActualizado = productosSimulados.first().copy(
-        stock = productosSimulados.first().stock - 1
-    )
-
-    val productosActualizados = productosSimulados.map { producto ->
-        if (producto.id == productoActualizado.id) productoActualizado else producto
-    }
-
-    emit(productosActualizados)
-}
 
 fun cargarProductos(): Flow<ResultadoProductos> = flow {
     emit(ResultadoProductos.Cargando)
@@ -74,24 +43,3 @@ fun cargarProductos(): Flow<ResultadoProductos> = flow {
         emit(ResultadoProductos.Error(e.message ?: "Error desconocido"))
     }
 }
-
-suspend fun probarCargaProductos() {
-    cargarProductos().collect { resultado ->
-        when (resultado) {
-            ResultadoProductos.Cargando -> {
-                println("Cargando productos...")
-            }
-            is ResultadoProductos.Exito -> {
-                println("Carga exitosa: ${resultado.productos}")
-            }
-            is ResultadoProductos.Error -> {
-                println("Ocurrió un error: ${resultado.mensaje}")
-            }
-        }
-    }
-}
-
-
-
-
-
