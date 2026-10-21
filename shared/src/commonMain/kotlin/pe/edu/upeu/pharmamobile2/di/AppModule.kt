@@ -6,6 +6,8 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
+import pe.edu.upeu.pharmamobil.db.PharmaDb
+import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriver
 import pe.edu.upeu.pharmamobile2.data.remote.ProductoApi
 import pe.edu.upeu.pharmamobile2.data.remote.createHttpClient
 import pe.edu.upeu.pharmamobile2.data.repository.AuthRepositorioRest
@@ -25,6 +27,7 @@ import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
 import pe.edu.upeu.pharmamobile2.presentation.sesion.SesionViewModel
 
 val dataModule = module {
+    single<PharmaDb> { PharmaDb(get<CreadorDeDriver>().crear()) }
     single<HttpClient> {
         val baseUrl = runCatching { get<String>(named("baseUrl")) }.getOrDefault("http://10.0.2.2:8080/")
         createHttpClient(

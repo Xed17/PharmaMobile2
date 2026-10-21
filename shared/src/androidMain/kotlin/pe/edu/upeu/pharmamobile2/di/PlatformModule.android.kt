@@ -8,6 +8,8 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguro
 import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguroAndroid
+import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriver
+import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriverAndroid
 import pe.edu.upeu.pharmamobile2.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobile2.platform.CompartidorAndroid
 
@@ -16,5 +18,6 @@ actual val platformModule: Module = module {
     single(named("baseUrl")) { "http://10.0.2.2:8080/" }
     single<Compartidor> { CompartidorAndroid(androidContext()) }
     single<AlmacenSeguro> { AlmacenSeguroAndroid(androidContext()) }
+    single<CreadorDeDriver> { CreadorDeDriverAndroid(androidContext()) }
 }
 
