@@ -11,7 +11,8 @@ data class ProductoUi(
     val activo: Boolean = true,
     val categoriaId: Long = 26L,
     val categoriaNombre: String? = null,
-    val precioNumerico: Double = 0.0
+    val precioNumerico: Double = 0.0,
+    val esPendiente: Boolean = id < 0
 ) {
     fun esBajoStock(): Boolean = stock <= 10
 }

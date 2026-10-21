@@ -124,6 +124,59 @@ fun ProductoScreen(
             color = MaterialTheme.colorScheme.primary
         )
 
+        // Barra de sincronización offline-first
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = if (state.totalPendientes > 0) Color(0xFFFFFBEB) else MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (state.totalPendientes > 0) {
+                            "☁️ Modo Offline: ${state.totalPendientes} producto(s) pendiente(s)"
+                        } else {
+                            "✅ Base local sincronizada"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (state.totalPendientes > 0) Color(0xFFB45309) else MaterialTheme.colorScheme.onSurface
+                    )
+                    state.mensajeSincronizacion?.let { msj ->
+                        Text(
+                            text = msj,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = { viewModel.sincronizar() },
+                    enabled = !state.sincronizando
+                ) {
+                    if (state.sincronizando) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Sincronizando...")
+                    } else {
+                        Text("🔄 Sincronizar")
+                    }
+                }
+            }
+        }
+
         Text(
             text = if (form.estaEnModoEdicion) "Editar Producto #${form.id}" else "Registrar Nuevo Producto",
             style = MaterialTheme.typography.titleLarge,
@@ -518,36 +571,52 @@ private fun ProductoItemCard(
                     )
                 }
 
-                val (badgeText, badgeBgColor, badgeTextColor) = when {
-                    !producto.activo -> Triple(
-                        "Inactivo",
-                        MaterialTheme.colorScheme.errorContainer,
-                        MaterialTheme.colorScheme.onErrorContainer
-                    )
-                    producto.esBajoStock() -> Triple(
-                        "Bajo Stock",
-                        MaterialTheme.colorScheme.error,
-                        MaterialTheme.colorScheme.onError
-                    )
-                    else -> Triple(
-                        "Activo",
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
+                if (producto.esPendiente) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFFFEF3C7))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "⏳ Pendiente",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color(0xFF92400E),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    val (badgeText, badgeBgColor, badgeTextColor) = when {
+                        !producto.activo -> Triple(
+                            "Inactivo",
+                            MaterialTheme.colorScheme.errorContainer,
+                            MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        producto.esBajoStock() -> Triple(
+                            "Bajo Stock",
+                            MaterialTheme.colorScheme.error,
+                            MaterialTheme.colorScheme.onError
+                        )
+                        else -> Triple(
+                            "Activo",
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(badgeBgColor)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = badgeText,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = badgeTextColor,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(badgeBgColor)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = badgeText,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = badgeTextColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 

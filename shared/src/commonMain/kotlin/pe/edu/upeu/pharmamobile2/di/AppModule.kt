@@ -82,6 +82,8 @@ val presentationModule = module {
     }
     viewModel {
         ProductoViewModel(
+            observarProductos = get(),
+            sincronizarProductos = get(),
             listarProductos = get(),
             obtenerProducto = get(),
             registrarProducto = get(),
