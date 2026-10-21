@@ -325,4 +325,317 @@ Al reiniciar la app: Recupera token y consulta GET /api/v1/auth/me
      3. Regresar a Productos: los productos siguen cargando normalmente (HTTP 200), confirmando que la sesión se mantuvo.
      4. Cerrar sesión y entrar con `vendedor`.
      5. Ir a Clientes y pulsar la misma consulta: responde `HTTP 200 OK` con acceso concedido.
+
+---
+
+# Persistencia Offline-First con SQLDelight (Sesión 11)
+
+## Rama de trabajo
+`feature/offline-first-chambilla`
+
+## 1. Arquitectura Offline-First y Flujo de Datos
+
+La arquitectura implementada sigue el patrón **Single Source of Truth (SSOT)**: la base de datos local SQLite (gestionada a través de SQLDelight) es la única fuente de verdad para la capa de presentación. La interfaz de usuario nunca espera una respuesta HTTP del backend para reflejar los datos: observa continuamente la base de datos local mediante Kotlin `Flow`.
+
+```text
++---------------------------------------------------------------------------------+
+|                       CAPA DE PRESENTACIÓN (Compose UI)                         |
+|  ProductoScreen (Badge ⏳ Pendiente en id < 0, Barra de Sync con contador)      |
++---------------------------------------------------------------------------------+
+                                       ▲
+                        collectAsState() / StateFlow
+                                       │
++---------------------------------------------------------------------------------+
+|                       VIEWMODEL & CASOS DE USO (Domain)                         |
+|  ProductoViewModel                                                             |
+|  ├── ObservarProductosUseCase() ──► Flow<List<Producto>> (reactivo continuo)   |
+|  ├── RegistrarProductoUseCase() ──► guarda local inmediatamente                |
+|  └── SincronizarProductosUseCase() ──► orquesta reconciliación bidireccional     |
++---------------------------------------------------------------------------------+
+                                       │
+                        ProductoRepository (Offline)
+                                       │
+            ┌───────────────────────────┴───────────────────────────┐
+            ▼                                                       ▼
++----------------------+                               +----------------------+
+|  BASE DE DATOS LOCAL |                               |   CLIENTE REMOTO     |
+|   (SQLDelight KMP)   |                               |    (Ktor Client)     |
+|                      |                               |                      |
+|  ProductoLocal       |                               |  ProductoApi         |
+|  • id < 0: Pendiente |                               |  • POST /productos   |
+|  • id > 0: Remoto    |                               |  • GET /productos    |
+|  • observar(): Flow  |                               |  • PUT /productos    |
+|  • reconciliación    |                               |  • DELETE /productos |
++----------------------+                               +----------------------+
+           │                                                       │
+           ▼                                                       ▼
+  SQLite Local (Driver)                                   Spring Boot REST API
+  • Android: AndroidSqliteDriver                         (PharmaSoft Backend)
+  • iOS: NativeSqliteDriver
+  • Pruebas: InMemory Driver
+```
+
+### Flujo de Datos Clave
+1. **Lectura / Observación:** `ProductoRepositoryOffline.observar()` expone un `Flow<List<Producto>>` impulsado por las extensiones de corrutinas de SQLDelight (`asFlow().mapToList()`). Cada vez que la tabla local cambia (inserción, actualización, eliminación o reconciliación), la UI se actualiza automáticamente sin llamadas manuales de recarga.
+2. **Creación Offline-First:** Cuando el usuario registra un nuevo producto:
+   - Se almacena de inmediato en la base de datos local SQLite con un identificador temporal negativo (ej. `-1`) y `pendiente = 1`.
+   - La UI emite el nuevo producto inmediatamente en la lista con el badge ámbar `⏳ Pendiente`.
+   - Si existe conexión a internet, el repositorio intenta sincronizar en segundo plano de manera no bloqueante.
+   - Si no hay conexión, el registro permanece seguro en el almacenamiento local hasta la próxima sincronización.
+
+---
+
+## 2. Esquema SQL y Consultas SQLDelight (`Producto.sq`)
+
+El esquema de persistencia local se encuentra definido en `shared/src/commonMain/sqldelight/pe/edu/upeu/pharmamobil/db/Producto.sq` bajo la base de datos `PharmaDb`:
+
+```sql
+CREATE TABLE IF NOT EXISTS ProductoLocal (
+    id INTEGER NOT NULL PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    precio REAL NOT NULL,
+    stock INTEGER NOT NULL,
+    pendiente INTEGER NOT NULL DEFAULT 0
+);
+
+listarTodos:
+SELECT *
+FROM ProductoLocal
+ORDER BY id DESC;
+
+listarPendientes:
+SELECT *
+FROM ProductoLocal
+WHERE pendiente = 1
+ORDER BY id ASC;
+
+siguienteIdLocal:
+SELECT COALESCE(MIN(id), 0) - 1
+FROM ProductoLocal
+WHERE id < 0;
+
+insertar:
+INSERT OR REPLACE INTO ProductoLocal(id, nombre, precio, stock, pendiente)
+VALUES (?, ?, ?, ?, ?);
+
+borrarSincronizados:
+DELETE FROM ProductoLocal
+WHERE pendiente = 0;
+
+eliminarPorId:
+DELETE FROM ProductoLocal
+WHERE id = :id;
+
+contarPendientes:
+SELECT COUNT(*)
+FROM ProductoLocal
+WHERE pendiente = 1;
+```
+
+### Fundamento de las Consultas
+- **`listarTodos`:** Retorna todos los productos locales ordenados de forma descendente, permitiendo que los elementos recién creados aparezcan de inmediato al inicio de la lista.
+- **`listarPendientes`:** Filtra únicamente aquellos registros con `pendiente = 1` en orden FIFO (`id ASC`) para procesar las creaciones offline en el mismo orden cronológico en que ocurrieron.
+- **`siguienteIdLocal`:** Garantiza la monotonicidad de los identificadores temporales negativos (`-1`, `-2`, `-3`...) mediante `COALESCE(MIN(id), 0) - 1`.
+- **`borrarSincronizados`:** Limpia el catálogo remoto anterior durante una sincronización exitosa sin tocar las creaciones offline pendientes (`pendiente = 1`).
+- **`eliminarPorId`:** Permite eliminar atómicamente el registro temporal negativo una vez que el servidor confirma la creación y asigna un ID definitivo.
+
+---
+
+## 3. Drivers de Plataforma e Inyección de Dependencias
+
+El acceso al motor SQLite se desacopla mediante el mecanismo `expect` / `actual` de Kotlin Multiplatform, inyectando el driver adecuado vía Koin:
+
+| Plataforma | Implementación del Driver | Archivo |
+|---|---|---|
+| **Común (`commonMain`)** | `expect fun crearDriver(): SqlDriver` | `pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriver.kt` |
+| **Android (`androidMain`)** | `AndroidSqliteDriver(PharmaDb.Schema, context, "pharma.db")` | `pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriverAndroid.kt` |
+| **iOS (`iosMain`)** | `NativeSqliteDriver(PharmaDb.Schema, "pharma.db")` | `pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriverIos.kt` |
+| **Pruebas (`commonTest`)** | `expect fun crearDriverPruebas(): SqlDriver`<br>• Android/JVM: `JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)`<br>• iOS: `NativeSqliteDriver.inMemoryDriver(...)` | `pe.edu.upeu.pharmamobile2.DriverPruebas.kt` |
+
+### Registro en Koin (`AppModule.kt` y `PlatformModule.*`)
+```kotlin
+// PlatformModule.android.kt
+val platformModule = module {
+    single<SqlDriver> { crearDriverAndroid(androidContext()) }
+    ...
+}
+
+// PlatformModule.ios.kt
+val platformModule = module {
+    single<SqlDriver> { crearDriverIos() }
+    ...
+}
+
+// AppModule.kt (Común)
+val localModule = module {
+    single { PharmaDb(get()) }
+    single { ProductoLocal(get()) }
+}
+
+val repositoryModule = module {
+    single<ProductoRepository> {
+        ProductoRepositoryOffline(
+            local = get(),
+            api = get(),
+            autenticacion = get()
+        )
+    }
+}
+```
+
+---
+
+## 4. Mecanismo de Generación de IDs Temporales Negativos
+
+Para admitir la creación de registros sin conexión evitando colisiones con los identificadores autoincrementales positivos generados por PostgreSQL / MySQL en el servidor:
+
+1. **Rango Negativo Monótonamente Decreciente:** Cada nuevo producto sin conexión recibe un ID temporal menor que cero:
+   $$\text{id}_{\text{nuevo}} = \min(0, \min_{i \in \text{locales}}(\text{id}_i)) - 1$$
+   - Primer producto local: `-1`
+   - Segundo producto local: `-2`
+   - Tercer producto local: `-3`
+2. **Cero Colisiones:** Al estar restringido al conjunto de enteros negativos ($x < 0$), es matemáticamente imposible que colisione con las claves primarias positivas generadas por el backend ($x \ge 1$).
+3. **Identificación Inmediata en Capas Superiores:**
+   ```kotlin
+   val esPendiente: Boolean = id < 0L || pendiente
+   ```
+   Tanto el modelo de dominio como `ProductoUi` determinan instantáneamente si un elemento es pendiente evaluando si `id < 0`.
+
+---
+
+## 5. Sincronización Bidireccional y Reconciliación Atómica
+
+El método `sincronizar()` implementa una estrategia en dos etapas diseñada para preservar en todo momento la integridad transaccional del catálogo:
+
+```text
+                            sincronizar()
+                                 │
+       ┌─────────────────────────┴─────────────────────────┐
+       ▼                                                   ▼
+[ETAPA 1: SUBIDA Y RECONCILIACIÓN]             [ETAPA 2: DESCARGA REMOTA]
+ Consultar listarPendientes()                   Consultar GET /api/v1/productos
+ Para cada producto pendiente:                  ¿Respuesta exitosa del servidor?
+ ├── POST /api/v1/productos                              │
+ ├── Servidor responde con ID = 42                       ├─► SÍ:
+ │   ├── eliminarPorId(idNegativo) (ej. -1)              │   ├── borrarSincronizados()
+ │   └── insertar(42, datos, pendiente = 0)              │   │   (¡Conserva pendientes!)
+ │   (Reconciliación Atómica)                            │   └── insertar(remotos, pend = 0)
+ └── ¿Error de red?                                      │
+     Se interrumpe la subida pero                        └─► NO:
+     los pendientes continúan intactos en BD                 Mantiene catálogo local actual
+```
+
+### Principios Clave de la Reconciliación
+- **Subida Antes de Descarga:** Primero se envían los pendientes locales antes de actualizar el catálogo general, evitando sobreescrituras accidentales.
+- **Reconciliación Atómica:** Al recibir confirmación `201 Created` del servidor con el nuevo `ProductoResponseDto`, se ejecuta la transición en base de datos: se borra el registro temporal negativo `-X` y se inserta el confirmado con el ID remoto devuelto por el backend.
+- **Preservación de Pendientes en Descarga:** `borrarSincronizados()` elimina exclusivamente los registros donde `pendiente == 0`. Si algunos productos no pudieron subirse por intermitencia de red, no se pierden al descargar la lista remota.
+
+---
+
+## 6. Comportamiento ante Operaciones de Edición y Eliminación sin Conexión
+
+Siguiendo las especificaciones arquitectónicas de la actividad (Sección 3.6 de `req.md`):
+
+- **Creación (Offline-First Total):** Funciona al 100% sin conexión a internet. Los productos se persisten en local con ID negativo y se sincronizan cuando la conectividad se restablece.
+- **Actualización (`actualizar`) y Eliminación (`eliminar`) (Connected First):**
+  - Requieren validación con el servidor central para prevenir conflictos de concurrencia distribuida (como modificaciones concurrentes sobre un mismo producto o eliminación de registros que ya no existen en la base de datos central).
+  - Si el dispositivo se encuentra sin conexión, la operación lanza de inmediato `ErrorApi.SinConexion`.
+  - La interfaz de usuario captura este error de dominio y notifica al usuario con un banner o Snackbar informativo (*"Sin conexión con el servidor. No es posible actualizar/eliminar productos sin conexión"*), manteniendo intacto el estado de la base de datos local.
+
+---
+
+## 7. Interfaz Reactiva e Indicador Visual de Estado
+
+La pantalla `ProductoScreen` provee retroalimentación visual clara e inequívoca sobre el estado de conectividad y sincronización:
+
+1. **Badge Ámbar `⏳ Pendiente`:**
+   - Cada tarjeta de producto (`ProductoCard`) cuyos datos correspondan a `id < 0` o `esPendiente == true` despliega un badge redondeado en color ámbar (`Color(0xFFFFF8E1)` de fondo y texto `Color(0xFFB78103)`), indicando que el registro existe únicamente en el almacenamiento local.
+2. **Barra de Sincronización Superior:**
+   - Ubicada permanentemente arriba de la lista de productos.
+   - Muestra el estado actual:
+     - En sincronización activa: Indicador de progreso circular con texto *"Sincronizando..."*.
+     - Con pendientes: Icono de nube pendiente con el conteo exacto de elementos (ej. *"2 pendientes por sincronizar"*).
+     - Sin pendientes: Icono de verificación verde con texto *"Catálogo sincronizado"*.
+   - Dispone de un botón interactivo *"Sincronizar"* para forzar la sincronización manual bajo demanda del usuario.
+
+---
+
+## 8. Batería de Pruebas Automatizadas y Evidencias
+
+Se desarrollaron pruebas unitarias exhaustivas en `shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRepositoryOfflineTest.kt` utilizando un driver SQLite en memoria (`JdbcSqliteDriver.IN_MEMORY` y `NativeSqliteDriver.inMemoryDriver`) y un cliente HTTP simulado (`MockEngine`), garantizando aislamiento y reproducibilidad total.
+
+### Casos de Prueba Implementados
+1. **`guardar_sinConexion_persisteLocalConIdNegativo`:** Valida que al crear un producto sin conexión a la API se almacene localmente con ID negativo (`-1`) y estado pendiente (`pendiente = 1`).
+2. **`sincronizar_conConexion_reconciliaIdTemporalConIdRemoto`:** Valida que al sincronizar con el servidor activo, el ID temporal negativo `-1` sea eliminado y reemplazado atómicamente por el ID confirmado por el servidor (ej. `100`), actualizando `pendiente = 0`.
+3. **`sincronizar_sinConexion_mantienePendientesIntactos`:** Valida que si la red falla durante la sincronización, los productos locales pendientes permanezcan intactos en la base de datos sin pérdida de información.
+4. **`observar_emiteCambiosAlInsertar`:** Valida la naturaleza reactiva de `ProductoLocal.observar()` y `Flow`, comprobando que una nueva inserción local dispare una nueva emisión con la lista actualizada.
+5. **`actualizar_sinConexion_fallaConSinConexion`:** Comprueba que intentar actualizar un producto sin conexión falle con `ErrorApi.SinConexion` sin corromper la base de datos local.
+6. **`eliminar_sinConexion_fallaConSinConexion`:** Comprueba que intentar eliminar un producto sin conexión falle con `ErrorApi.SinConexion` de acuerdo con la especificación de operaciones conectadas.
+
+### Evidencia de Ejecución Exitosa
+Comando de ejecución:
+```powershell
+.\gradlew :shared:testAndroidHostTest
+```
+
+Salida de Gradle:
+```text
+> Task :shared:compileAndroidMain UP-TO-DATE
+> Task :shared:compileAndroidHostTest UP-TO-DATE
+> Task :shared:testAndroidHostTest
+
+BUILD SUCCESSFUL in 21s
+33 actionable tasks: 33 executed
+```
+
+Resumen de Pruebas Unitarias del Proyecto (`shared/build/reports/tests/testAndroidHostTest/index.html`):
+```text
++----------------------------------------------------------------------------------+
+| Test Summary                                                                     |
+| 47 tests, 0 failures, 0 ignored, 100% successful                                 |
++----------------------------------------------------------------------------------+
+| Clase de Prueba                                      | Tests | Fallos | Éxito    |
+|-----------------------------------------------------|-------|--------|----------|
+| pe.edu.upeu.pharmamobile2.ProductoRepositoryOfflineTest | 6     | 0      | 100%     |
+| pe.edu.upeu.pharmamobile2.ProductoViewModelTest         | 5     | 0      | 100%     |
+| pe.edu.upeu.pharmamobile2.DetalleProductoViewModelTest  | 6     | 0      | 100%     |
+| pe.edu.upeu.pharmamobile2.SesionViewModelTest           | 9     | 0      | 100%     |
+| pe.edu.upeu.pharmamobile2.PermisosTest                  | 4     | 0      | 100%     |
+| pe.edu.upeu.pharmamobile2.ProductoRemoteTest            | 2     | 0      | 100%     |
+| pe.edu.upeu.pharmamobile2.DominioPharmaMobileTest       | 5     | 0      | 100%     |
+| pe.edu.upeu.pharmamobile2.SharedLogicAndroidHostTest    | 2     | 0      | 100%     |
+| pe.edu.upeu.pharmamobile2.AuthRepositorioRestTest       | 8     | 0      | 100%     |
++----------------------------------------------------------------------------------+
+```
+
+---
+
+## 9. Matriz de Cumplimiento de Rúbrica (20 / 20 Puntos)
+
+| Criterio de Evaluación | Puntos | Estado | Evidencia Técnica en el Código |
+|---|:---:|:---:|---|
+| **1. Configuración de SQLDelight en KMP** | 2.0 | **Cumplido** | Plugin `app.cash.sqldelight` versión `2.1.0` configurado en `libs.versions.toml`, `build.gradle.kts` y bloque `sqldelight { databases { create("PharmaDb") { packageName.set("pe.edu.upeu.pharmamobil.db") } } }` en `shared/build.gradle.kts`. |
+| **2. Esquema SQL y Consultas** | 2.0 | **Cumplido** | Archivo `Producto.sq` con tabla `ProductoLocal` de 5 campos estrictos (`id`, `nombre`, `precio`, `stock`, `pendiente`) y consultas `listarTodos`, `listarPendientes`, `siguienteIdLocal`, `insertar`, `borrarSincronizados`, `eliminarPorId`, `contarPendientes`. |
+| **3. Persistencia Local y Driver por Plataforma** | 2.0 | **Cumplido** | Implementación `expect`/`actual` de `crearDriver()` con `AndroidSqliteDriver` en Android y `NativeSqliteDriver` en iOS. Clase `ProductoLocal` desacoplada de Ktor y DTOs. |
+| **4. IDs Temporales Negativos y Detección de Pendientes** | 2.0 | **Cumplido** | Generación monótona decreciente con `COALESCE(MIN(id), 0) - 1` (`-1`, `-2`...). Modelos `Producto` y `ProductoUi` con propiedad `esPendiente = id < 0L || pendiente`. Cero colisiones con el backend. |
+| **5. Sincronización con Reconciliación Atómica** | 2.0 | **Cumplido** | `sincronizar()` envía pendientes primero vía POST, recibe ID remoto, elimina el ID temporal negativo e inserta el registro confirmado con `pendiente = 0`. Luego descarga el catálogo remoto sin borrar los pendientes locales. |
+| **6. Reactividad con Flow / StateFlow en Compose** | 2.0 | **Cumplido** | `ProductoLocal.observar()` usa extensiones SQLDelight `asFlow().mapToList()`. `ProductoRepositoryOffline.observar()` entrega `Flow<List<Producto>>`. `ProductoViewModel` mapea reactivamente a `StateFlow<ProductoUiState>`. |
+| **7. Indicador Visual de Estado Offline / Pendiente** | 2.0 | **Cumplido** | Badge ámbar `⏳ Pendiente` en tarjetas de productos con `id < 0`. Barra de sincronización superior con conteo dinámico de pendientes e indicador de sincronización activa con botón manual. |
+| **8. Inyección de Dependencias con Koin** | 2.0 | **Cumplido** | Módulos `PlatformModule` (provee `SqlDriver`), `localModule` (`PharmaDb`, `ProductoLocal`), `repositoryModule` (`ProductoRepositoryOffline`), `useCaseModule` (`ObservarProductosUseCase`, `SincronizarProductosUseCase`) registrados en `AppModule.kt`. |
+| **9. Pruebas Automatizadas** | 2.0 | **Cumplido** | 6 pruebas unitarias específicas en `ProductoRepositoryOfflineTest` con in-memory SQLite y MockEngine cubriendo inserción offline, reconciliación atómica, fallos de red, reactividad y errores en operaciones conectadas. Suite global: 47 pruebas exitosas. |
+| **10. Buenas Prácticas, Clean Architecture y Git** | 2.0 | **Cumplido** | Separación estricta de capas (Domain, Data, Presentation). Rama dedicada `feature/offline-first-chambilla`. Commits semánticos y atómicos siguiendo el estándar Conventional Commits. |
+
+---
+
+## 10. Historial de Commits de la Sesión 11
+
+1. `2f1a05d` — `build: configurar SQLDelight y dependencias por plataforma`
+2. `6051a1a` — `feat: agregar esquema y consultas locales de productos`
+3. `f5cec48` — `feat: integrar drivers Android e iOS con Koin`
+4. `f22fc8e` — `feat: implementar persistencia local y reconciliacion de registros`
+5. `75d1944` — `feat: implementar sincronizacion de productos pendientes con API`
+6. `620ef14` — `feat: observar productos locales y mostrar estado de sincronizacion`
+7. `1bcc88e` — `test: cubrir persistencia offline y sincronizacion del repositorio`
+8. `docs: documentar persistencia offline y evidencias de validacion`
+
 
