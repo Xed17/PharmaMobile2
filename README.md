@@ -390,7 +390,7 @@ La arquitectura implementada sigue el patrón **Single Source of Truth (SSOT)**:
 El esquema de persistencia local se encuentra definido en `shared/src/commonMain/sqldelight/pe/edu/upeu/pharmamobil/db/Producto.sq` bajo la base de datos `PharmaDb`:
 
 ```sql
-CREATE TABLE IF NOT EXISTS ProductoLocal (
+CREATE TABLE producto (
     id INTEGER NOT NULL PRIMARY KEY,
     nombre TEXT NOT NULL,
     precio REAL NOT NULL,
@@ -400,35 +400,35 @@ CREATE TABLE IF NOT EXISTS ProductoLocal (
 
 listarTodos:
 SELECT *
-FROM ProductoLocal
-ORDER BY id DESC;
+FROM producto
+ORDER BY nombre ASC;
 
 listarPendientes:
 SELECT *
-FROM ProductoLocal
+FROM producto
 WHERE pendiente = 1
-ORDER BY id ASC;
+ORDER BY id DESC;
 
 siguienteIdLocal:
 SELECT COALESCE(MIN(id), 0) - 1
-FROM ProductoLocal
+FROM producto
 WHERE id < 0;
 
 insertar:
-INSERT OR REPLACE INTO ProductoLocal(id, nombre, precio, stock, pendiente)
+INSERT OR REPLACE INTO producto(id, nombre, precio, stock, pendiente)
 VALUES (?, ?, ?, ?, ?);
 
 borrarSincronizados:
-DELETE FROM ProductoLocal
+DELETE FROM producto
 WHERE pendiente = 0;
 
 eliminarPorId:
-DELETE FROM ProductoLocal
-WHERE id = :id;
+DELETE FROM producto
+WHERE id = ?;
 
 contarPendientes:
 SELECT COUNT(*)
-FROM ProductoLocal
+FROM producto
 WHERE pendiente = 1;
 ```
 
@@ -636,6 +636,6 @@ Resumen de Pruebas Unitarias del Proyecto (`shared/build/reports/tests/testAndro
 5. `75d1944` — `feat: implementar sincronizacion de productos pendientes con API`
 6. `620ef14` — `feat: observar productos locales y mostrar estado de sincronizacion`
 7. `1bcc88e` — `test: cubrir persistencia offline y sincronizacion del repositorio`
-8. `docs: documentar persistencia offline y evidencias de validacion`
+8. `882e3d1` — `docs: documentar persistencia offline y evidencias de validacion`
 
 
