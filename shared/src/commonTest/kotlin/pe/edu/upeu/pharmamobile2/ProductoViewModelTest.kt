@@ -49,6 +49,17 @@ class ProductoViewModelTest {
     ) : ProductoRepository {
         var eliminarLlamadoId: Long? = null
         var registrarLlamado: Boolean = false
+        private val _flow = kotlinx.coroutines.flow.MutableStateFlow<List<Producto>>(productos.toList())
+
+        override fun observar(): kotlinx.coroutines.flow.Flow<List<Producto>> {
+            _flow.value = productos.toList()
+            return _flow
+        }
+
+        override suspend fun sincronizar() {
+            throwOnListar?.let { throw it }
+            _flow.value = productos.toList()
+        }
 
         override suspend fun listar(): List<Producto> {
             throwOnListar?.let { throw it }
@@ -64,6 +75,7 @@ class ProductoViewModelTest {
             registrarLlamado = true
             val nuevo = producto.copy(id = (productos.size + 1).toLong())
             productos.add(nuevo)
+            _flow.value = productos.toList()
             return nuevo
         }
 
@@ -71,6 +83,7 @@ class ProductoViewModelTest {
             throwOnActualizar?.let { throw it }
             val index = productos.indexOfFirst { it.id == producto.id }
             if (index >= 0) productos[index] = producto
+            _flow.value = productos.toList()
             return producto
         }
 
@@ -79,11 +92,14 @@ class ProductoViewModelTest {
             throwOnEliminar?.let { throw it }
             eliminarLlamadoId = id
             productos.removeAll { it.id == id }
+            _flow.value = productos.toList()
         }
     }
 
     private fun crearViewModel(repo: FakeProductoRepository): ProductoViewModel {
         return ProductoViewModel(
+            observarProductos = pe.edu.upeu.pharmamobile2.domain.usecase.ObservarProductosUseCase(repo),
+            sincronizarProductos = pe.edu.upeu.pharmamobile2.domain.usecase.SincronizarProductosUseCase(repo),
             listarProductos = ListarProductosUseCase(repo),
             obtenerProducto = ObtenerProductoUseCase(repo),
             registrarProducto = RegistrarProductoUseCase(repo),

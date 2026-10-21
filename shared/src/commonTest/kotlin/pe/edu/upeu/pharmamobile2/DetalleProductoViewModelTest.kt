@@ -50,6 +50,8 @@ class DetalleProductoViewModelTest {
     private class FakeRepo(
         val productos: List<Producto> = listOf()
     ) : ProductoRepository {
+        override fun observar(): kotlinx.coroutines.flow.Flow<List<Producto>> = kotlinx.coroutines.flow.flowOf(productos)
+        override suspend fun sincronizar() {}
         override suspend fun listar(): List<Producto> = productos
         override suspend fun obtener(id: Long): Producto = productos.first { it.id == id }
         override suspend fun registrar(producto: Producto): Producto = producto
