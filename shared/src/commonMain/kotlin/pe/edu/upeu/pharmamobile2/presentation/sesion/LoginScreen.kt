@@ -418,6 +418,11 @@ fun LoginScreen(
                                 onClick = { viewModel.seleccionarCuentaRapida("almacen", "Almacen123") },
                                 label = { Text("📦 almacen (Inventario)") }
                             )
+                            FilterChip(
+                                selected = false,
+                                onClick = { viewModel.accederModoOffline() },
+                                label = { Text("🔌 Modo Offline (Catálogo)") }
+                            )
                         }
                     }
                 }

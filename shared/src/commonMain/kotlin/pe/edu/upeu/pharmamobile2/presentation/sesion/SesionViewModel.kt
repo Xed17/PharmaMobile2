@@ -165,6 +165,26 @@ class SesionViewModel(
         }
     }
 
+    fun accederModoOffline() {
+        val sesionOffline = pe.edu.upeu.pharmamobile2.domain.model.Sesion(
+            token = "jwt.offline.local.token",
+            username = "admin",
+            nombreCompleto = "Administrador (Modo Offline)",
+            roles = listOf("ROLE_ADMIN"),
+            permisos = setOf("CATALOGO_LEER", "CATALOGO_ESCRIBIR")
+        )
+        _uiState.update {
+            it.copy(
+                estado = EstadoSesion.Autenticada(sesionOffline),
+                estaCargando = false,
+                claveInput = "",
+                errorLogin = null,
+                usernameError = null,
+                claveError = null
+            )
+        }
+    }
+
     fun cerrarSesion() {
         viewModelScope.launch {
             cerrarSesionUseCase()
