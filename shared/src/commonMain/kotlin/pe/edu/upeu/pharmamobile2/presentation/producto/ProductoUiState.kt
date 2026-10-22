@@ -23,7 +23,8 @@ data class ProductoUiState(
     val mensajeExito: String? = null,
     val sincronizando: Boolean = false,
     val mensajeSincronizacion: String? = null,
-    val totalPendientes: Int = 0
+    val totalPendientes: Int = 0,
+    val antiguedadSincronizacion: String = "Nunca sincronizado"
 ) {
     sealed interface Fase {
         data object Cargando : Fase
