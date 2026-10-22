@@ -15,9 +15,11 @@ import pe.edu.upeu.pharmamobile2.domain.usecase.ActualizarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.EliminarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ObservarProductosUseCase
+import pe.edu.upeu.pharmamobile2.domain.usecase.ObservarUltimaSincronizacionUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ObtenerProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.SincronizarProductosUseCase
+import pe.edu.upeu.pharmamobile2.platform.formatearAntiguedad
 
 class ProductoViewModel(
     private val observarProductos: ObservarProductosUseCase,
@@ -26,7 +28,9 @@ class ProductoViewModel(
     private val obtenerProducto: ObtenerProductoUseCase,
     private val registrarProducto: RegistrarProductoUseCase,
     private val actualizarProducto: ActualizarProductoUseCase,
-    private val eliminarProducto: EliminarProductoUseCase
+    private val eliminarProducto: EliminarProductoUseCase,
+    private val observarUltimaSincronizacion: ObservarUltimaSincronizacionUseCase? = null,
+    private val productoRepository: ProductoRepository? = null
 ) : ViewModel() {
 
     // Constructor de conveniencia para tests o inicialización directa con repositorio
@@ -40,7 +44,9 @@ class ProductoViewModel(
         obtenerProducto = ObtenerProductoUseCase(repository),
         registrarProducto = registrarUseCase,
         actualizarProducto = ActualizarProductoUseCase(repository),
-        eliminarProducto = EliminarProductoUseCase(repository)
+        eliminarProducto = EliminarProductoUseCase(repository),
+        observarUltimaSincronizacion = ObservarUltimaSincronizacionUseCase(repository),
+        productoRepository = repository
     )
 
     private val _uiState = MutableStateFlow(ProductoUiState())
@@ -48,6 +54,7 @@ class ProductoViewModel(
 
     init {
         iniciarObservacion()
+        iniciarObservacionSincronizacion()
         sincronizar()
     }
 
@@ -67,6 +74,23 @@ class ProductoViewModel(
                     )
                 }
             }
+        }
+    }
+
+    private fun iniciarObservacionSincronizacion() {
+        observarUltimaSincronizacion?.let { useCase ->
+            viewModelScope.launch {
+                useCase().collect { timestamp ->
+                    val texto = formatearAntiguedad(timestamp)
+                    _uiState.update { it.copy(antiguedadSincronizacion = texto) }
+                }
+            }
+        }
+    }
+
+    fun simularSincronizacionAntigua() {
+        viewModelScope.launch {
+            productoRepository?.simularUltimaSincronizacionAntigua()
         }
     }
 

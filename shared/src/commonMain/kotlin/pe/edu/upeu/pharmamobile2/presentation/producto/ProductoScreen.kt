@@ -149,29 +149,41 @@ fun ProductoScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = if (state.totalPendientes > 0) Color(0xFFB45309) else MaterialTheme.colorScheme.onSurface
                     )
+                    Text(
+                        text = "🕒 ${state.antiguedadSincronizacion}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     state.mensajeSincronizacion?.let { msj ->
                         Text(
                             text = msj,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
 
-                Button(
-                    onClick = { viewModel.sincronizar() },
-                    enabled = !state.sincronizando
-                ) {
-                    if (state.sincronizando) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Sincronizando...")
-                    } else {
-                        Text("🔄 Sincronizar")
+                Column(horizontalAlignment = Alignment.End) {
+                    Button(
+                        onClick = { viewModel.sincronizar() },
+                        enabled = !state.sincronizando
+                    ) {
+                        if (state.sincronizando) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Sincronizando...")
+                        } else {
+                            Text("🔄 Sincronizar")
+                        }
+                    }
+                    TextButton(
+                        onClick = { viewModel.simularSincronizacionAntigua() }
+                    ) {
+                        Text("🧪 Simular >24h", style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }

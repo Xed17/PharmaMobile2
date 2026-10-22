@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS metadato (
+    clave TEXT NOT NULL PRIMARY KEY,
+    valor TEXT NOT NULL
+);
+
+obtener:
+SELECT valor
+FROM metadato
+WHERE clave = :clave;
+
+guardar:
+INSERT OR REPLACE INTO metadato(clave, valor)
+VALUES (:clave, :valor);

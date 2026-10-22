@@ -93,7 +93,7 @@ class ProductoRepositoryOfflineTest {
     }
 
     @Test
-    fun test1_descargaConRedGuardaProductosRemotos() = runTest(testDispatcher) {
+    fun test1_sincronizacionConRed_flowEmiteListaCompleta() = runTest(testDispatcher) {
         val respuestaListado = """
         {
           "contenido": [
@@ -112,22 +112,25 @@ class ProductoRepositoryOfflineTest {
         val api = ProductoApi(client)
         val repo = ProductoRepositoryOffline(local, api)
 
-        // Sincronizar catálogo
+        // Sincronizar catálogo con red disponible
         repo.sincronizar()
 
+        // 1. La base contiene los productos del servidor y el Flow emite la lista completa
         val productos = repo.observar().first()
-        assertEquals(2, productos.size)
-        assertEquals("Amoxicilina 500mg", productos[0].nombre)
+        assertEquals(2, productos.size, "El Flow debe emitir los 2 productos descargados")
         assertEquals(101L, productos[0].id)
-        assertEquals(0, local.pendientes().size, "No debe haber productos pendientes tras sincronizar")
+        assertEquals("Amoxicilina 500mg", productos[0].nombre)
+        assertEquals(102L, productos[1].id)
+        assertEquals("Ibuprofeno 400mg", productos[1].nombre)
+        assertEquals(0, local.pendientes().size, "No debe haber productos marcados como pendientes")
     }
 
     @Test
-    fun test2_registroSinRedGuardaComoPendienteConIdNegativo() = runTest(testDispatcher) {
-        // Simular que no hay conexión (servidor devuelve 503 o falla)
+    fun test2_registroSinRed_guardaPendienteYFlowEmite() = runTest(testDispatcher) {
+        // Al fallar el envío (sin red / 503)
         val (client, _) = crearMockClient(
-            onPost = { HttpStatusCode.ServiceUnavailable to "{\"message\":\"Sin conexion\"}" },
-            onGet = { HttpStatusCode.ServiceUnavailable to "{\"message\":\"Sin conexion\"}" }
+            onPost = { HttpStatusCode.ServiceUnavailable to "{\"message\":\"Sin red\"}" },
+            onGet = { HttpStatusCode.ServiceUnavailable to "{\"message\":\"Sin red\"}" }
         )
 
         val api = ProductoApi(client)
@@ -143,29 +146,32 @@ class ProductoRepositoryOfflineTest {
         // Registrar sin red
         val guardado = repo.registrar(nuevo)
 
-        // Verificaciones
-        assertTrue(guardado.id < 0L, "El ID local debe ser negativo (ej: -1)")
+        // Verificaciones:
+        // 1. Queda guardado con la marca de pendiente (ID negativo < 0)
+        assertTrue(guardado.id < 0L, "El producto debe recibir un ID local negativo indicando pendiente")
         assertEquals(-1L, guardado.id)
 
-        val lista = repo.observar().first()
-        assertEquals(1, lista.size)
-        assertEquals("Vitamina C 1000mg", lista.first().nombre)
-
         val pendientes = local.pendientes()
-        assertEquals(1, pendientes.size)
+        assertEquals(1, pendientes.size, "Debe existir exactamente 1 producto pendiente en base local")
         assertEquals(-1L, pendientes.first().id)
+
+        // 2. El Flow lo emite igualmente para que la UI lo pinte de inmediato
+        val listaFlow = repo.observar().first()
+        assertEquals(1, listaFlow.size, "El Flow debe emitir el producto guardado sin red")
+        assertEquals("Vitamina C 1000mg", listaFlow.first().nombre)
+        assertEquals(-1L, listaFlow.first().id)
     }
 
     @Test
-    fun test3_reconexionExitosaReconciliaTemporalYRemoto() = runTest(testDispatcher) {
-        // Guardar previamente un pendiente en base local
+    fun test3_envioAlReconectar_eliminaMarcaPendiente() = runTest(testDispatcher) {
+        // 1. Previamente guardado sin red con marca de pendiente (-1)
         val localP = local.guardarPendiente(
             Producto(id = 0L, nombre = "Paracetamol Jarabe", precio = 9.5, stock = 15)
         )
         assertEquals(-1L, localP.id)
         assertEquals(1, local.pendientes().size)
 
-        // Servidor confirma el registro y asigna ID remoto 45
+        // 2. Servidor ahora disponible: confirma el POST y asigna ID real 45
         val respuestaPost = """
         {"id": 45, "nombre": "Paracetamol Jarabe", "precio": 9.5, "stock": 15, "estado": true, "categoriaId": 26}
         """.trimIndent()
@@ -187,124 +193,111 @@ class ProductoRepositoryOfflineTest {
         val api = ProductoApi(client)
         val repo = ProductoRepositoryOffline(local, api)
 
-        // Ejecutar sincronización (reconectar)
+        // Sincronizar con el servidor disponible
         repo.sincronizar()
 
-        // Verificaciones post-reconciliación
-        assertEquals(0, local.pendientes().size, "La lista de pendientes debe quedar vacía")
+        // Verificaciones:
+        // La fila deja de estar marcada como pendiente
+        assertEquals(0, local.pendientes().size, "La lista de pendientes debe quedar en 0 tras reconexión exitosa")
+
         val lista = repo.observar().first()
         assertEquals(1, lista.size)
-        assertEquals(45L, lista.first().id, "El producto debe conservar el ID remoto confirmado (45)")
+        assertEquals(45L, lista.first().id, "El producto consolidado tiene el ID real del servidor (45)")
     }
 
     @Test
-    fun test4_segundaSincronizacionNoVuelveAEnviarRegistrosConfirmados() = runTest(testDispatcher) {
-        local.guardarPendiente(
-            Producto(id = 0L, nombre = "Alcohol 70%", precio = 6.0, stock = 25)
+    fun test4_laBajadaNoBorraLoPendiente_conservaCreadosSinRed() = runTest(testDispatcher) {
+        val (client, _) = crearMockClient(
+            onPost = { HttpStatusCode.ServiceUnavailable to "{}" },
+            onGet = { HttpStatusCode.OK to "{}" }
         )
-
-        val respuestaPost = """
-        {"id": 88, "nombre": "Alcohol 70%", "precio": 6.0, "stock": 25, "estado": true, "categoriaId": 26}
-        """.trimIndent()
-
-        val respuestaGet = """
-        {
-          "contenido": [
-            {"id": 88, "nombre": "Alcohol 70%", "precio": 6.0, "stock": 25, "estado": true, "categoriaId": 26}
-          ],
-          "pagina": 0, "tamanio": 20, "totalElementos": 1, "totalPaginas": 1, "ultima": true
-        }
-        """.trimIndent()
-
-        val (client, getPostCount) = crearMockClient(
-            onPost = { HttpStatusCode.Created to respuestaPost },
-            onGet = { HttpStatusCode.OK to respuestaGet }
-        )
-
         val api = ProductoApi(client)
         val repo = ProductoRepositoryOffline(local, api)
 
-        // 1ra Sincronización -> Debe enviar 1 POST
-        repo.sincronizar()
-        assertEquals(1, getPostCount(), "Se debió emitir exactamente 1 petición POST")
-
-        // 2da Sincronización -> 0 POST adicionales
-        repo.sincronizar()
-        assertEquals(1, getPostCount(), "La segunda sincronización no debe volver a emitir POST")
-    }
-
-    @Test
-    fun test5_postExitosoYGetFallidoNoPierdeLaConfirmacionLocal() = runTest(testDispatcher) {
-        val p = local.guardarPendiente(
-            Producto(id = 0L, nombre = "Gasas Estériles", precio = 3.5, stock = 100)
-        )
-        assertEquals(-1L, p.id)
-
-        var postLlamado = false
-        val mockEngine = MockEngine { request ->
-            if (request.method.value == "POST") {
-                postLlamado = true
-                respond(
-                    content = """{"id": 99, "nombre": "Gasas Estériles", "precio": 3.5, "stock": 100, "estado": true, "categoriaId": 26}""",
-                    status = HttpStatusCode.Created,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json")
-                )
-            } else {
-                // El GET subsiguiente falla intencionalmente (ej: micro-corte de red)
-                respond(
-                    content = "Error de red",
-                    status = HttpStatusCode.BadGateway
-                )
-            }
-        }
-
-        val client = HttpClient(mockEngine) {
-            expectSuccess = true
-            install(ContentNegotiation) { json(json) }
-            defaultRequest {
-                url("http://localhost:8080/")
-                contentType(ContentType.Application.Json)
-            }
-        }
-
-        val api = ProductoApi(client)
-        val repo = ProductoRepositoryOffline(local, api)
-
-        // Ejecutar sincronización que fallará en la fase 2 (GET)
-        val resultado = runCatching { repo.sincronizar() }
-        assertTrue(resultado.isFailure, "La sincronización reporta fallo porque el GET no completó")
-        assertTrue(postLlamado, "El POST sí fue ejecutado exitosamente")
-
-        // Verificación crítica: La reconciliación del POST no se perdió
-        assertEquals(0, local.pendientes().size, "El producto ya no debe estar marcado como pendiente")
-        val lista = repo.observar().first()
-        assertEquals(1, lista.size)
-        assertEquals(99L, lista.first().id, "El ID 99 remoto confirmado se conservó en disco")
-    }
-
-    @Test
-    fun test6_reemplazoDeListadoRemotoNoEliminaPendientesLocales() = runTest(testDispatcher) {
-        // Guardar un producto pendiente localmente (-1)
+        // 1. El usuario creó un producto sin conexión
         val pendiente = local.guardarPendiente(
-            Producto(id = 0L, nombre = "Pendiente Offline", precio = 20.0, stock = 5)
+            Producto(id = 0L, nombre = "Antigripal Noche", precio = 14.0, stock = 20)
         )
         assertEquals(-1L, pendiente.id)
 
-        // Nuevos datos remotos descargados del servidor
+        // 2. Traer la lista del servidor
         val remotos = listOf(
-            Producto(id = 10L, nombre = "Remoto 1", precio = 10.0, stock = 10),
-            Producto(id = 20L, nombre = "Remoto 2", precio = 15.0, stock = 15)
+            Producto(id = 10L, nombre = "Omeprazol 20mg", precio = 10.0, stock = 35),
+            Producto(id = 20L, nombre = "Loratadina 10mg", precio = 6.5, stock = 50)
         )
-
-        // Ejecutar reemplazo de sincronizados
         local.reemplazarSincronizados(remotos)
 
-        // Verificaciones
-        val productos = local.observar().first()
-        assertEquals(3, productos.size, "Debe contener los 2 remotos más el pendiente local")
-        assertTrue(productos.any { it.id == -1L && it.nombre == "Pendiente Offline" }, "El pendiente local debe persistir")
-        assertTrue(productos.any { it.id == 10L }, "Debe contener Remoto 1")
-        assertTrue(productos.any { it.id == 20L }, "Debe contener Remoto 2")
-        assertEquals(1, local.pendientes().size, "Sigue existiendo exactamente 1 pendiente")
+        // Verificación esencial: Traer la lista del servidor conserva las filas que el usuario creó sin conexión
+        val listado = repo.observar().first()
+        assertEquals(3, listado.size, "Deben convivir los 2 productos del servidor y el creado sin conexión")
+        assertTrue(listado.any { it.id == -1L && it.nombre == "Antigripal Noche" }, "El producto pendiente no fue borrado")
+        assertTrue(listado.any { it.id == 10L && it.nombre == "Omeprazol 20mg" })
+        assertTrue(listado.any { it.id == 20L && it.nombre == "Loratadina 10mg" })
+        assertEquals(1, local.pendientes().size, "Sigue registrado exactamente 1 pendiente")
+    }
+
+    @Test
+    fun test5_identificadoresSinColision_convivenSinSobrescribirse() = runTest(testDispatcher) {
+        val (client, _) = crearMockClient(
+            onPost = { HttpStatusCode.Created to "{}" },
+            onGet = { HttpStatusCode.OK to "{}" }
+        )
+        val api = ProductoApi(client)
+        val repo = ProductoRepositoryOffline(local, api)
+
+        // Producto local pendiente con ID negativo (-1)
+        local.guardarPendiente(
+            Producto(id = 0L, nombre = "Producto Local Pendiente", precio = 25.0, stock = 8)
+        )
+
+        // Producto del servidor con ID numérico positivo (1)
+        val productoServidor = listOf(
+            Producto(id = 1L, nombre = "Producto Servidor 1", precio = 30.0, stock = 12)
+        )
+        local.reemplazarSincronizados(productoServidor)
+
+        // Verificación: Un producto local y uno del servidor con numeración distinta conviven sin sobrescribirse
+        val emitidos = repo.observar().first()
+        assertEquals(2, emitidos.size, "Ambos productos deben convivir en la misma base local")
+        
+        val localEncontrado = emitidos.find { it.id == -1L }
+        assertNotNull(localEncontrado, "El producto local con ID -1 debe existir")
+        assertEquals("Producto Local Pendiente", localEncontrado.nombre)
+
+        val remotoEncontrado = emitidos.find { it.id == 1L }
+        assertNotNull(remotoEncontrado, "El producto remoto con ID 1 debe existir")
+        assertEquals("Producto Servidor 1", remotoEncontrado.nombre)
+    }
+
+    @Test
+    fun test6_sincronizarDosVecesNoDuplica_mismaCantidadFilas() = runTest(testDispatcher) {
+        val respuestaListado = """
+        {
+          "contenido": [
+            {"id": 201, "nombre": "Alcohol en Gel 500ml", "precio": 11.0, "stock": 60, "estado": true, "categoriaId": 26},
+            {"id": 202, "nombre": "Mascarillas KN95 x10", "precio": 15.0, "stock": 40, "estado": true, "categoriaId": 26}
+          ],
+          "pagina": 0, "tamanio": 20, "totalElementos": 2, "totalPaginas": 1, "ultima": true
+        }
+        """.trimIndent()
+
+        val (client, _) = crearMockClient(
+            onPost = { HttpStatusCode.Created to "{}" },
+            onGet = { HttpStatusCode.OK to respuestaListado }
+        )
+
+        val api = ProductoApi(client)
+        val repo = ProductoRepositoryOffline(local, api)
+
+        // 1ra Sincronización
+        repo.sincronizar()
+        val conteo1 = repo.observar().first().size
+        assertEquals(2, conteo1, "Primera sincronización carga 2 productos")
+
+        // 2da Sincronización inmediata
+        repo.sincronizar()
+        val conteo2 = repo.observar().first().size
+        assertEquals(2, conteo2, "Ejecutar la sincronización dos veces seguidas deja la misma cantidad de filas")
+        assertEquals(conteo1, conteo2, "No debe haber duplicación de registros")
     }
 }

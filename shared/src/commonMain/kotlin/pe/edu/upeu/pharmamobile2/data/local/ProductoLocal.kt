@@ -2,6 +2,7 @@ package pe.edu.upeu.pharmamobile2.data.local
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +16,7 @@ class ProductoLocal(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val queries = db.productoQueries
+    private val metadatoQueries = db.metadatoQueries
 
     fun observar(): Flow<List<Producto>> =
         queries.listarTodos()
@@ -89,6 +91,19 @@ class ProductoLocal(
 
     fun contarPendientes(): Long = queries.contarPendientes().executeAsOne()
 
+    fun observarUltimaSincronizacion(): Flow<Long?> =
+        metadatoQueries.obtener(CLAVE_ULTIMA_SINC)
+            .asFlow()
+            .mapToOneOrNull(dispatcher)
+            .map { it?.toLongOrNull() }
+
+    fun obtenerUltimaSincronizacion(): Long? =
+        metadatoQueries.obtener(CLAVE_ULTIMA_SINC).executeAsOneOrNull()?.toLongOrNull()
+
+    fun guardarUltimaSincronizacion(timestampMs: Long) {
+        metadatoQueries.guardar(CLAVE_ULTIMA_SINC, timestampMs.toString())
+    }
+
     private fun ProductoEntity.toDomain(): Producto = Producto(
         id = id,
         nombre = nombre,
@@ -98,4 +113,8 @@ class ProductoLocal(
         categoriaId = 26L,
         categoriaNombre = "Analgésicos"
     )
+
+    companion object {
+        const val CLAVE_ULTIMA_SINC = "ultima_sincronizacion"
+    }
 }

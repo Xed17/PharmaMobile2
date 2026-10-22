@@ -39,6 +39,13 @@ class ProductoRepositoryOffline(
 
     override fun observar(): Flow<List<Producto>> = local.observar()
 
+    override fun observarUltimaSincronizacion(): Flow<Long?> = local.observarUltimaSincronizacion()
+
+    override suspend fun simularUltimaSincronizacionAntigua() {
+        val hace26Horas = pe.edu.upeu.pharmamobile2.platform.obtenerTiempoActualMs() - (26L * 3600_000L)
+        local.guardarUltimaSincronizacion(hace26Horas)
+    }
+
     override suspend fun listar(): List<Producto> {
         return local.observar().first()
     }
@@ -94,6 +101,7 @@ class ProductoRepositoryOffline(
             }.getOrThrow()
 
             local.reemplazarSincronizados(remotos)
+            local.guardarUltimaSincronizacion(pe.edu.upeu.pharmamobile2.platform.obtenerTiempoActualMs())
         }
     }
 
