@@ -46,7 +46,7 @@ class ProductoRepositoryOfflineTest {
     fun setUp() {
         driver = crearDriverPruebas()
         db = PharmaDb(driver)
-        local = ProductoLocal(db, testDispatcher)
+        local = ProductoLocal(db, pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta("test", 1), testDispatcher)
     }
 
     @AfterTest

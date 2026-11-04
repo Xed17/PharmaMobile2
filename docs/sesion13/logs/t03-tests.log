@@ -1,0 +1,117 @@
+Reusing configuration cache.
+> Task :androidApp:preBuild UP-TO-DATE
+> Task :androidApp:generateDebugAssets UP-TO-DATE
+> Task :shared:generateAndroidHostTestAssets UP-TO-DATE
+> Task :shared:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:androidPreBuild UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:preAndroidMainBuild UP-TO-DATE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :androidApp:preDebugBuild UP-TO-DATE
+> Task :shared:generateComposeResClass UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:androidJar UP-TO-DATE
+> Task :shared:preAndroidHostTestBuild UP-TO-DATE
+> Task :shared:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:copyNonXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:processAndroidMainManifest UP-TO-DATE
+> Task :shared:generateAndroidHostTestResources UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :androidApp:extractDeepLinksDebug UP-TO-DATE
+> Task :shared:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :androidApp:generateDebugResources UP-TO-DATE
+> Task :androidApp:javaPreCompileDebug UP-TO-DATE
+> Task :shared:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :androidApp:desugarDebugFileDependencies UP-TO-DATE
+> Task :androidApp:mergeDebugJniLibFolders UP-TO-DATE
+> Task :androidApp:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :androidApp:validateSigningDebug UP-TO-DATE
+> Task :shared:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:mergeAndroidMainJniLibFolders UP-TO-DATE
+> Task :androidApp:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :androidApp:packageDebugResources UP-TO-DATE
+> Task :androidApp:writeDebugAppMetadata UP-TO-DATE
+> Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :shared:generateCommonMainPharmaDbInterface UP-TO-DATE
+> Task :shared:copyAndroidMainJniLibsProjectOnly UP-TO-DATE
+> Task :androidApp:checkDebugDuplicateClasses UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
+> Task :shared:processAndroidHostTestManifest UP-TO-DATE
+> Task :androidApp:checkDebugAarMetadata UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :androidApp:processDebugNavigationResources UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :androidApp:processDebugMainManifest UP-TO-DATE
+> Task :androidApp:compileDebugNavigationResources UP-TO-DATE
+> Task :shared:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :shared:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :androidApp:parseDebugLocalResources UP-TO-DATE
+> Task :androidApp:processDebugManifest UP-TO-DATE
+> Task :androidApp:mergeExtDexDebug UP-TO-DATE
+> Task :androidApp:processDebugManifestForPackage UP-TO-DATE
+> Task :shared:copyAndroidMainComposeResourcesToAndroidAssets UP-TO-DATE
+> Task :androidApp:generateDebugRFile UP-TO-DATE
+> Task :shared:mergeAndroidMainAssets UP-TO-DATE
+> Task :shared:checkAndroidHostTestAarMetadata UP-TO-DATE
+> Task :shared:packageAndroidMainResources UP-TO-DATE
+> Task :shared:compileAndroidMainLibraryResources UP-TO-DATE
+> Task :androidApp:mergeDebugNativeLibs UP-TO-DATE
+> Task :shared:parseAndroidMainLocalResources UP-TO-DATE
+> Task :shared:mapAndroidHostTestSourceSetPaths UP-TO-DATE
+> Task :androidApp:stripDebugDebugSymbols UP-TO-DATE
+> Task :shared:mergeAndroidHostTestAssets UP-TO-DATE
+> Task :androidApp:mergeDebugAssets UP-TO-DATE
+> Task :shared:mergeAndroidHostTestResources UP-TO-DATE
+> Task :androidApp:mapDebugSourceSetPaths UP-TO-DATE
+> Task :androidApp:compressDebugAssets UP-TO-DATE
+> Task :shared:generateAndroidMainRFile UP-TO-DATE
+> Task :androidApp:mergeDebugResources UP-TO-DATE
+> Task :shared:processAndroidHostTestResources UP-TO-DATE
+> Task :shared:packageAndroidHostTestForUnitTest UP-TO-DATE
+> Task :androidApp:processDebugResources UP-TO-DATE
+> Task :shared:generateAndroidHostTestConfig UP-TO-DATE
+
+> Task :shared:compileAndroidMain
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/androidMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.android.kt:5:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. Consider using the '-Xexpect-actual-classes' flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.kt:3:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. Consider using the '-Xexpect-actual-classes' flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/components/ValidatedTextField.kt:32:33 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/pedido/PedidoScreen.kt:91:22 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/pedido/PedidoScreen.kt:142:22 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/producto/ProductoScreen.kt:449:17 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
+
+> Task :shared:processAndroidMainJavaRes UP-TO-DATE
+> Task :shared:bundleAndroidMainClassesToRuntimeJar
+> Task :shared:bundleAndroidMainClassesToCompileJar
+> Task :androidApp:compileDebugKotlin
+> Task :androidApp:compileDebugJavaWithJavac NO-SOURCE
+> Task :androidApp:processDebugJavaRes UP-TO-DATE
+> Task :androidApp:dexBuilderDebug UP-TO-DATE
+> Task :androidApp:mergeProjectDexDebug UP-TO-DATE
+> Task :androidApp:mergeDebugJavaResource UP-TO-DATE
+> Task :shared:bundleLibRuntimeToDirAndroidMain
+
+> Task :shared:compileAndroidHostTest
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoViewModelTest.kt:213:37 No cast needed.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoViewModelTest.kt:216:37 No cast needed.
+
+> Task :androidApp:mergeLibDexDebug
+> Task :androidApp:packageDebug
+> Task :androidApp:assembleDebug
+> Task :androidApp:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :shared:testAndroidHostTest
+
+[Incubating] Problems report is available at: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 35s
+71 actionable tasks: 10 executed, 61 up-to-date
+Configuration cache entry reused.

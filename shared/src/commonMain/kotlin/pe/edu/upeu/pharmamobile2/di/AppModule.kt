@@ -32,8 +32,10 @@ import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
 import pe.edu.upeu.pharmamobile2.presentation.sesion.SesionViewModel
 
 val dataModule = module {
+    single<pe.edu.upeu.pharmamobile2.domain.port.Reloj> { pe.edu.upeu.pharmamobile2.data.platform.RelojSistema() }
+    single<pe.edu.upeu.pharmamobile2.domain.port.Espera> { pe.edu.upeu.pharmamobile2.data.platform.EsperaCoroutines() }
+    single<pe.edu.upeu.pharmamobile2.domain.port.GeneradorIds> { pe.edu.upeu.pharmamobile2.data.platform.GeneradorUuid() }
     single<PharmaDb> { PharmaDb(get<CreadorDeDriver>().crear()) }
-    single { ProductoLocal(get()) }
     single<HttpClient> {
         val baseUrl = runCatching { get<String>(named("baseUrl")) }.getOrDefault("http://10.0.2.2:8080/")
         createHttpClient(
@@ -49,7 +51,12 @@ val dataModule = module {
         )
     }
     single<ProductoApi> { ProductoApi(get()) }
-    single<ProductoRepository> {
+    scope(named("cuenta")) {
+    scoped { ProductoLocal(get(), get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.repository.ColaProductoRepository> { pe.edu.upeu.pharmamobile2.data.local.ColaProductoLocal(get(),get(),get(),get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.repository.BorradorProductoRepository> { pe.edu.upeu.pharmamobile2.data.local.BorradorProductoLocal(get(),get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.repository.DescargaRepository> { pe.edu.upeu.pharmamobile2.data.local.DescargaLocal(get(),get()) }
+    scoped<ProductoRepository> {
         ProductoRepositoryOffline(
             local = get(),
             api = get(),
@@ -57,31 +64,14 @@ val dataModule = module {
             authRepository = get()
         )
     }
-}
-
-val domainModule = module {
-    factory { ObservarProductosUseCase(get()) }
-    factory { ObservarUltimaSincronizacionUseCase(get()) }
-    factory { SincronizarProductosUseCase(get()) }
-    factory { ListarProductosUseCase(get()) }
-    factory { ObtenerProductoUseCase(get()) }
-    factory { RegistrarProductoUseCase(get()) }
-    factory { ActualizarProductoUseCase(get()) }
-    factory { EliminarProductoUseCase(get()) }
-    factory { IniciarSesionUseCase(get()) }
-    factory { RecuperarSesionUseCase(get()) }
-    factory { CerrarSesionUseCase(get()) }
-}
-
-val presentationModule = module {
-    viewModel {
-        SesionViewModel(
-            authRepository = get(),
-            iniciarSesionUseCase = get(),
-            recuperarSesionUseCase = get(),
-            cerrarSesionUseCase = get()
-        )
-    }
+    scoped { ObservarProductosUseCase(get()) }
+    scoped { ObservarUltimaSincronizacionUseCase(get()) }
+    scoped { SincronizarProductosUseCase(get()) }
+    scoped { ListarProductosUseCase(get()) }
+    scoped { ObtenerProductoUseCase(get()) }
+    scoped { RegistrarProductoUseCase(get()) }
+    scoped { ActualizarProductoUseCase(get()) }
+    scoped { EliminarProductoUseCase(get()) }
     viewModel {
         ProductoViewModel(
             observarProductos = get(),
@@ -101,6 +91,17 @@ val presentationModule = module {
             compartidor = get()
         )
     }
+    }
+}
+
+val domainModule = module {
+    factory { IniciarSesionUseCase(get()) }
+    factory { RecuperarSesionUseCase(get()) }
+    factory { CerrarSesionUseCase(get()) }
+}
+val presentationModule = module {
+    single { ScopesCuenta(getKoin()) }
+    viewModel { SesionViewModel(get(), get(), get(), get()) }
 }
 
 val deviceModule = module {

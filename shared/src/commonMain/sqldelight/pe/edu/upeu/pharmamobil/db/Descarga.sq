@@ -1,0 +1,17 @@
+CREATE TABLE descarga (
+    cuentaClave TEXT NOT NULL PRIMARY KEY,
+    cadenaId TEXT NOT NULL,
+    estado TEXT NOT NULL,
+    intentos INTEGER NOT NULL CHECK(intentos BETWEEN 0 AND 5),
+    proximoEnMs INTEGER,
+    agotadaEnMs INTEGER,
+    ultimoErrorCodigo TEXT,
+    ultimoError TEXT
+);
+
+obtener:
+SELECT * FROM descarga WHERE cuentaClave = :cuentaClave;
+
+guardar:
+INSERT OR REPLACE INTO descarga(cuentaClave, cadenaId, estado, intentos, proximoEnMs, agotadaEnMs, ultimoErrorCodigo, ultimoError)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);

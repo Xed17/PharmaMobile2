@@ -13,5 +13,6 @@ class ScopesCuenta(private val koin: Koin) {
             it.declare(contexto)
         }
     }
-    suspend fun cerrar(contexto: ContextoCuenta) { abiertos.remove(contexto)?.close() }
+    fun cerrarAhora(contexto: ContextoCuenta) { abiertos.remove(contexto)?.close() }
+    suspend fun cerrar(contexto: ContextoCuenta) { cerrarAhora(contexto) }
 }
