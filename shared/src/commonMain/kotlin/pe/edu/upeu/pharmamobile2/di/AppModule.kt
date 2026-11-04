@@ -50,6 +50,7 @@ val dataModule = module {
             almacenSeguro = get()
         )
     }
+    single<pe.edu.upeu.pharmamobile2.domain.port.GuardiaCuenta> { get<AuthRepository>() as pe.edu.upeu.pharmamobile2.domain.port.GuardiaCuenta }
     scope(named("cuenta")) {
     scoped { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main.immediate) }
     scoped { ProductoLocal(get(), get()) }

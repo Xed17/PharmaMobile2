@@ -75,4 +75,18 @@ object InMemoryRepository {
         }
         return false
     }
+
+    fun limpiarDatosDeSesion() {
+        pedidos.clear()
+        clientes.clear()
+        clientes.addAll(
+            listOf(
+                Cliente(id = 1L, nombre = "Juan Pérez", correo = "juan.perez@gmail.com", telefono = "987654321"),
+                Cliente(id = 2L, nombre = "María Gómez", correo = "maria.gomez@outlook.com", telefono = "912345678"),
+                Cliente(id = 3L, nombre = "Carlos Mendoza", correo = "carlos.mendoza@yahoo.com", telefono = "955443322")
+            )
+        )
+        nextClienteId = 4L
+        nextPedidoId = 1
+    }
 }
