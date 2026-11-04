@@ -24,5 +24,8 @@ mapa_capas_pharmamobil.png
 ~$*
 *.docx
 *.pdf
+!docs/sesion13/*.pdf
+!docs/sesion13/evidencias/*.png
+*.png
 scratch/
 evidencias/
