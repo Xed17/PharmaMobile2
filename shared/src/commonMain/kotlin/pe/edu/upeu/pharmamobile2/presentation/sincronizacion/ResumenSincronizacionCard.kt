@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso
 
 @Composable
 fun ResumenSincronizacionCard(
@@ -13,6 +14,9 @@ fun ResumenSincronizacionCard(
     onSincronizar: () -> Unit,
     onRevisarEnvios: (() -> Unit)? = null,
     onReintentarDescarga: (() -> Unit)? = null,
+    onSolicitarPermiso: (() -> Unit)? = null,
+    onDescartarPermiso: (() -> Unit)? = null,
+    onAbrirAjustes: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -102,6 +106,48 @@ fun ResumenSincronizacionCard(
                         onClick = onReintentarDescarga
                     ) {
                         Text("Reintentar descarga")
+                    }
+                }
+            }
+
+            if (estado.estadoPermisoAvisos != EstadoPermiso.Concedido && !estado.avisoPermisoDescartado) {
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Activa los avisos para saber si tus cambios se enviaron o necesitan revisión",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (estado.estadoPermisoAvisos is EstadoPermiso.DenegadoParaSiempre) {
+                        Button(
+                            onClick = { onAbrirAjustes?.invoke() },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Abrir Ajustes")
+                        }
+                    } else {
+                        Button(
+                            onClick = { onSolicitarPermiso?.invoke() },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Activar")
+                        }
+                    }
+
+                    OutlinedButton(
+                        onClick = { onDescartarPermiso?.invoke() }
+                    ) {
+                        Text("Ahora no")
                     }
                 }
             }

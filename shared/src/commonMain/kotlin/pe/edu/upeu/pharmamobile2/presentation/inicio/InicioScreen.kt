@@ -24,7 +24,10 @@ fun InicioScreen(
     syncState: SincronizacionUiState? = null,
     onSincronizar: (() -> Unit)? = null,
     onRevisarEnvios: (() -> Unit)? = null,
-    onReintentarDescarga: (() -> Unit)? = null
+    onReintentarDescarga: (() -> Unit)? = null,
+    onSolicitarPermiso: (() -> Unit)? = null,
+    onDescartarPermiso: (() -> Unit)? = null,
+    onAbrirAjustes: (() -> Unit)? = null
 ) {
     val scrollState = rememberScrollState()
 
@@ -69,6 +72,9 @@ fun InicioScreen(
                 onSincronizar = { onSincronizar?.invoke() },
                 onRevisarEnvios = onRevisarEnvios,
                 onReintentarDescarga = onReintentarDescarga,
+                onSolicitarPermiso = onSolicitarPermiso,
+                onDescartarPermiso = onDescartarPermiso,
+                onAbrirAjustes = onAbrirAjustes,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             Spacer(modifier = Modifier.height(20.dp))

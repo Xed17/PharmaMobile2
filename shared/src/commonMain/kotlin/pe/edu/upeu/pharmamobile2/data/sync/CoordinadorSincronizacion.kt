@@ -12,7 +12,7 @@ import pe.edu.upeu.pharmamobile2.domain.usecase.*
 class CoordinadorSincronizacion(private val scope: CoroutineScope,private val enviar: EnviarPendientesUseCase,
     private val descargar: DescargarCatalogoUseCase,private val cola: ColaProductoRepository,
     private val descargaLocal: DescargaRepository,private val auth: AuthRepository,private val contexto: ContextoCuenta,
-    private val disparador: DisparadorSincronizacion,private val monitor: MonitorConectividad) : SincronizadorProductos {
+    private val disparador: DisparadorSincronizacion,private val monitor: MonitorConectividad,private val notificador: NotificadorSincronizacion? = null) : SincronizadorProductos {
     private val puerta=Mutex()
     private var activo: Deferred<ResumenSincronizacion>?=null
     private var pendiente: MotivoSync?=null
@@ -71,6 +71,7 @@ class CoordinadorSincronizacion(private val scope: CoroutineScope,private val en
                 val resultado=ciclo(motivo)
                 enviadas+=resultado.enviadas
                 _resultados.emit(resultado)
+                try { notificador?.publicar(contexto, resultado) } catch (_: Throwable) {}
                 val siguiente=puerta.withLock {
                     val siguiente=pendiente;pendiente=null
                     if(siguiente==null && activo===ejecutando) { activo=null;_actividad.value=false }
@@ -125,5 +126,6 @@ class CoordinadorSincronizacion(private val scope: CoroutineScope,private val en
         cancelarCiclo()
         escuchas.joinAll();escuchas.clear()
         disparador.cerrar()
+        try { notificador?.cancelar(contexto) } catch (_: Throwable) {}
     }
 }

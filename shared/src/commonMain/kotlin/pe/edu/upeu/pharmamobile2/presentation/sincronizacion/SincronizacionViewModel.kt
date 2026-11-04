@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import pe.edu.upeu.pharmamobile2.domain.model.*
+import pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso
+import pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos
+import pe.edu.upeu.pharmamobile2.domain.port.Permiso
 import pe.edu.upeu.pharmamobile2.domain.port.Reloj
 import pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos
 import pe.edu.upeu.pharmamobile2.domain.repository.ColaProductoRepository
@@ -18,12 +21,15 @@ class SincronizacionViewModel(
     private val coordinador: SincronizadorProductos,
     private val revisarEnvio: RevisarEnvioUseCase,
     private val reloj: Reloj,
+    private val gestorPermisos: GestorPermisos? = null,
     iniciarTicker: Boolean = true
 ) : ViewModel() {
 
     private val tick = MutableStateFlow(reloj.ahoraMs())
+    private val _permisoState = MutableStateFlow<EstadoPermiso>(EstadoPermiso.Denegado)
+    private val _permisoDescartado = MutableStateFlow(false)
 
-    val estado: StateFlow<SincronizacionUiState> = combine(
+    private val baseSyncFlow = combine(
         cola.observar(),
         descarga.observarUltimaSync(),
         coordinador.actividad,
@@ -48,6 +54,17 @@ class SincronizacionViewModel(
             antiguedad = antiguedad,
             puedeReintentarDescarga = puedeReintentar
         )
+    }
+
+    val estado: StateFlow<SincronizacionUiState> = combine(
+        baseSyncFlow,
+        _permisoState,
+        _permisoDescartado
+    ) { base, perm, descartado ->
+        base.copy(
+            estadoPermisoAvisos = perm,
+            avisoPermisoDescartado = descartado
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
@@ -61,6 +78,11 @@ class SincronizacionViewModel(
                     delay(60_000)
                     tick.value = reloj.ahoraMs()
                 }
+            }
+        }
+        if (gestorPermisos != null) {
+            viewModelScope.launch {
+                _permisoState.value = gestorPermisos.estado(Permiso.NOTIFICACIONES)
             }
         }
     }
@@ -85,5 +107,20 @@ class SincronizacionViewModel(
         viewModelScope.launch {
             revisarEnvio(id, decision, aceptaRiesgo)
         }
+    }
+
+    fun solicitarPermisoAvisos() {
+        viewModelScope.launch {
+            val res = gestorPermisos?.solicitar(Permiso.NOTIFICACIONES) ?: EstadoPermiso.Denegado
+            _permisoState.value = res
+        }
+    }
+
+    fun descartarAvisoPermiso() {
+        _permisoDescartado.value = true
+    }
+
+    fun abrirAjustes() {
+        gestorPermisos?.abrirAjustes()
     }
 }

@@ -20,5 +20,6 @@ actual val platformModule: Module = module {
     single<Compartidor> { CompartidorAndroid(androidContext()) }
     single<AlmacenSeguro> { AlmacenSeguroAndroid(androidContext()) }
     single<CreadorDeDriver> { CreadorDeDriverAndroid(androidContext()) }
+    single<pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos> { pe.edu.upeu.pharmamobile2.data.permiso.GestorPermisosAndroid(androidContext()) }
+    single<pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion> { pe.edu.upeu.pharmamobile2.data.notificacion.NotificadorAndroid(androidContext(), get()) }
 }
-

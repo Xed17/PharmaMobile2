@@ -582,7 +582,10 @@ private fun AppScaffold(
                     syncState = syncState,
                     onSincronizar = { syncVm.sincronizar() },
                     onRevisarEnvios = { onSelectScreen(Screen.RevisionEnvios) },
-                    onReintentarDescarga = { syncVm.reintentarDescarga() }
+                    onReintentarDescarga = { syncVm.reintentarDescarga() },
+                    onSolicitarPermiso = { syncVm.solicitarPermisoAvisos() },
+                    onDescartarPermiso = { syncVm.descartarAvisoPermiso() },
+                    onAbrirAjustes = { syncVm.abrirAjustes() }
                 )
                 is Screen.Productos -> {
                     val viewModel: ProductoViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)

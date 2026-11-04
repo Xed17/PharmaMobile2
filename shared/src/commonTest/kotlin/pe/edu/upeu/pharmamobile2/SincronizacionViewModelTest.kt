@@ -116,4 +116,51 @@ class SincronizacionViewModelTest {
             f.cerrar()
         }
     }
+    @Test
+    fun flujoDePermisoEnViewModel() = runTest(testDispatcher) {
+        val f = EscenarioSync.crear(testDispatcher)
+        try {
+            val gestorFalso = object : pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos {
+                var estadoActual: pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso = pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso.Denegado
+                override suspend fun estado(permiso: pe.edu.upeu.pharmamobile2.domain.port.Permiso) = estadoActual
+                override suspend fun solicitar(permiso: pe.edu.upeu.pharmamobile2.domain.port.Permiso): pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso {
+                    estadoActual = pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso.Concedido
+                    return estadoActual
+                }
+                override fun abrirAjustes() {}
+            }
+            val disparador = pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion()
+            val revisarUseCase = RevisarEnvioUseCase(f.cola, f.auth, f.contexto, f.reloj, disparador)
+            val vm = SincronizacionViewModel(
+                cola = f.cola,
+                descarga = DescargaLocal(f.db, f.contexto, testDispatcher),
+                coordinador = object : SincronizadorProductos {
+                    override val actividad = MutableStateFlow(false)
+                    override val resultados = MutableSharedFlow<ResumenSincronizacion>()
+                    override fun iniciar() {}
+                    override suspend fun sincronizar(motivo: MotivoSync) = ResumenSincronizacion(0, 0, 0, 0, 0, false, null)
+                    override suspend fun reintentarDescarga() = ResumenSincronizacion(0, 0, 0, 0, 0, false, null)
+                    override suspend fun detener() {}
+                },
+                revisarEnvio = revisarUseCase,
+                reloj = f.reloj,
+                gestorPermisos = gestorFalso,
+                iniciarTicker = false
+            )
+            advanceUntilIdle()
+            assertIs<pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso.Denegado>(vm.estado.value.estadoPermisoAvisos)
+
+            vm.solicitarPermisoAvisos()
+            advanceUntilIdle()
+            assertIs<pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso.Concedido>(vm.estado.value.estadoPermisoAvisos)
+
+            assertFalse(vm.estado.value.avisoPermisoDescartado)
+            vm.descartarAvisoPermiso()
+            advanceUntilIdle()
+            assertTrue(vm.estado.value.avisoPermisoDescartado)
+        } finally {
+            advanceUntilIdle()
+            f.cerrar()
+        }
+    }
 }

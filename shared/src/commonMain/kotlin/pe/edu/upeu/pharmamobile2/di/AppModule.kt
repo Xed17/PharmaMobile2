@@ -58,7 +58,7 @@ val dataModule = module {
     scoped { pe.edu.upeu.pharmamobile2.domain.usecase.EnviarPendientesUseCase(get(), get(), get(), get(), get()) }
     scoped { pe.edu.upeu.pharmamobile2.domain.usecase.DescargarCatalogoUseCase(get(), get(), get(), get(), get(), get(), get()) }
     scoped<pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos> {
-        pe.edu.upeu.pharmamobile2.data.sync.CoordinadorSincronizacion(get(), get(), get(), get(), get(), get(), get(), get(), get())
+        pe.edu.upeu.pharmamobile2.data.sync.CoordinadorSincronizacion(get(), get(), get(), get(), get(), get(), get(), get(), get(), getOrNull())
     }
     scoped { pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion() }
     scoped<ProductoApi> {
@@ -115,7 +115,8 @@ val dataModule = module {
             descarga = get(),
             coordinador = get(),
             revisarEnvio = get(),
-            reloj = get()
+            reloj = get(),
+            gestorPermisos = getOrNull()
         )
     }
     }

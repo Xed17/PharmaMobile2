@@ -1,5 +1,7 @@
 package pe.edu.upeu.pharmamobile2.presentation.sincronizacion
 
+import pe.edu.upeu.pharmamobile2.domain.port.EstadoPermiso
+
 data class SincronizacionUiState(
     val enCurso: Boolean = false,
     val pendientes: Int = 0,
@@ -9,5 +11,7 @@ data class SincronizacionUiState(
     val ultimaSync: Long? = null,
     val antiguedad: String = "Nunca sincronizado",
     val mensaje: String? = null,
-    val puedeReintentarDescarga: Boolean = false
+    val puedeReintentarDescarga: Boolean = false,
+    val estadoPermisoAvisos: EstadoPermiso = EstadoPermiso.Denegado,
+    val avisoPermisoDescartado: Boolean = false
 )
