@@ -13,6 +13,12 @@ class ScopesCuenta(private val koin: Koin) {
             it.declare(contexto)
         }
     }
-    fun cerrarAhora(contexto: ContextoCuenta) { abiertos.remove(contexto)?.close() }
+    fun cerrarAhora(contexto: ContextoCuenta) {
+        abiertos.remove(contexto)?.let { scope ->
+            scope.getOrNull<kotlinx.coroutines.CoroutineScope>()?.coroutineContext?.get(kotlinx.coroutines.Job)?.cancel()
+            scope.getOrNull<pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion>()?.cerrar()
+            scope.close()
+        }
+    }
     suspend fun cerrar(contexto: ContextoCuenta) { cerrarAhora(contexto) }
 }

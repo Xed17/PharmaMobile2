@@ -51,7 +51,13 @@ val dataModule = module {
         )
     }
     scope(named("cuenta")) {
+    scoped { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main.immediate) }
     scoped { ProductoLocal(get(), get()) }
+    scoped { pe.edu.upeu.pharmamobile2.domain.usecase.EnviarPendientesUseCase(get(), get(), get(), get(), get()) }
+    scoped { pe.edu.upeu.pharmamobile2.domain.usecase.DescargarCatalogoUseCase(get(), get(), get(), get(), get(), get(), get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos> {
+        pe.edu.upeu.pharmamobile2.data.sync.CoordinadorSincronizacion(get(), get(), get(), get(), get(), get(), get(), get(), get())
+    }
     scoped { pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion() }
     scoped<ProductoApi> {
         val auth=get<AuthRepository>()

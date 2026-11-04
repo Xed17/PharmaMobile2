@@ -35,6 +35,7 @@ class BorradorProductoTest {
             descarga.conciliarCompleta(listOf(Producto(id=30L,nombre="Remoto",precio=4.0,stock=8)),5000)
             assertEquals(setOf(-1L,30L),local.listar().map { it.id }.toSet())
             assertEquals(5000L,descarga.observarUltimaSync().first())
+            assertEquals(EstadoCadena.COMPLETA,descarga.actual()!!.estado)
             assertNull(DescargaLocal(db,b).observarUltimaSync().first())
         } finally { driver.close() }
     }

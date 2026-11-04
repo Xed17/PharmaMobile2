@@ -18,9 +18,11 @@ import pe.edu.upeu.pharmamobile2.domain.usecase.EnviarPendientesUseCase
 
 class RemotoPrueba : ProductoRemotoRepository {
     var llamadas=0
+    var lecturas=0
+    var descarga: suspend () -> Result<List<Producto>> = { Result.success(emptyList()) }
     var respuesta: suspend (Producto)->ResultadoEnvio = { ResultadoEnvio.Exito(it.copy(id=100L)) }
     override suspend fun crear(producto: Producto): ResultadoEnvio { llamadas++;return respuesta(producto) }
-    override suspend fun listarCompleto(): Result<List<Producto>> = Result.success(emptyList())
+    override suspend fun listarCompleto(): Result<List<Producto>> { lecturas++;return descarga() }
 }
 class EscenarioSync private constructor(val driver: SqlDriver,val client: HttpClient,val db: PharmaDb,
     val auth: AuthRepositorioRest,val contexto: ContextoCuenta,val reloj: RelojFalso,dispatcher: CoroutineDispatcher) {

@@ -14,6 +14,7 @@ import pe.edu.upeu.pharmamobile2.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobile2.platform.CompartidorAndroid
 
 actual val platformModule: Module = module {
+    single<pe.edu.upeu.pharmamobile2.domain.port.MonitorConectividad> { pe.edu.upeu.pharmamobile2.platform.MonitorConectividadAndroid(androidContext()) }
     single<HttpClientEngine> { OkHttp.create() }
     single(named("baseUrl")) { "http://10.0.2.2:8080/" }
     single<Compartidor> { CompartidorAndroid(androidContext()) }

@@ -7,6 +7,18 @@ import pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta
 import kotlin.test.*
 
 class ScopesCuentaTest {
+    @Test fun cerrarCuentaCancelaSusTrabajos() = runTest {
+        val app = koinApplication { }
+        try {
+            val scopes = ScopesCuenta(app.koin)
+            val contexto = ContextoCuenta("A", 1)
+            val cuenta = scopes.abrir(contexto)
+            val job = kotlinx.coroutines.SupervisorJob()
+            cuenta.declare(kotlinx.coroutines.CoroutineScope(job))
+            scopes.cerrarAhora(contexto)
+            assertFalse(job.isActive)
+        } finally { app.close() }
+    }
     @Test fun cuentaYGeneracionDeterminanElScopeYSalirLoCierra() = runTest {
         val app = koinApplication { }
         try {

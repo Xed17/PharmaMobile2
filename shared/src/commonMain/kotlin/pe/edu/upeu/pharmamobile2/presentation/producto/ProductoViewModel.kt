@@ -33,22 +33,6 @@ class ProductoViewModel(
     private val productoRepository: ProductoRepository? = null
 ) : ViewModel() {
 
-    // Constructor de conveniencia para tests o inicialización directa con repositorio
-    constructor(
-        registrarUseCase: RegistrarProductoUseCase,
-        repository: ProductoRepository
-    ) : this(
-        observarProductos = ObservarProductosUseCase(repository),
-        sincronizarProductos = SincronizarProductosUseCase(repository),
-        listarProductos = ListarProductosUseCase(repository),
-        obtenerProducto = ObtenerProductoUseCase(repository),
-        registrarProducto = registrarUseCase,
-        actualizarProducto = ActualizarProductoUseCase(repository),
-        eliminarProducto = EliminarProductoUseCase(repository),
-        observarUltimaSincronizacion = ObservarUltimaSincronizacionUseCase(repository),
-        productoRepository = repository
-    )
-
     private val _uiState = MutableStateFlow(ProductoUiState())
     val uiState: StateFlow<ProductoUiState> = _uiState.asStateFlow()
 

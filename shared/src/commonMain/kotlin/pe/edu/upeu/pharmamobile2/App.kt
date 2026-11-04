@@ -179,13 +179,15 @@ fun App() {
                 is EstadoSesion.Autenticada -> {
                     val sesion = estado.sesion
                     val auth: pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository = koinInject()
-                    val acceso = auth.acceso.value as? pe.edu.upeu.pharmamobile2.domain.model.AccesoSesion.Disponible
+                    val accesoActual by auth.acceso.collectAsState()
+                    val acceso = accesoActual as? pe.edu.upeu.pharmamobile2.domain.model.AccesoSesion.Disponible
                     if (acceso == null) {
                         PantallaCargandoSesion()
                     } else {
                     val contexto = acceso.contexto
                     val scopes: pe.edu.upeu.pharmamobile2.di.ScopesCuenta = koinInject()
                     val cuentaScope = remember(contexto) { scopes.abrir(contexto) }
+                    LaunchedEffect(contexto) { cuentaScope.get<pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos>().iniciar() }
                     val cuentaOwner = remember(contexto) { object : androidx.lifecycle.ViewModelStoreOwner {
                         override val viewModelStore = androidx.lifecycle.ViewModelStore()
                     } }

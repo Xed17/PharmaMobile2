@@ -32,6 +32,9 @@ class DescargaLocal(private val db: PharmaDb, private val contexto: ContextoCuen
         db.transaction {
             local.reemplazarSincronizados(productos)
             local.guardarUltimaSincronizacion(ahoraMs)
+            q.obtener(contexto.clave).executeAsOneOrNull()?.let { cadena ->
+                q.guardar(contexto.clave,cadena.cadenaId,EstadoCadena.COMPLETA.name,cadena.intentos,null,null,null,null)
+            }
         }
     }
     override fun observarUltimaSync(): Flow<Long?> = local.observarUltimaSincronizacion()

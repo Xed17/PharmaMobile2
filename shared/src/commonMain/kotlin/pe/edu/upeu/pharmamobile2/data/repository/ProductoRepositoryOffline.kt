@@ -23,7 +23,6 @@ class ProductoRepositoryOffline(
     private val disparador: pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion = pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion()
 ) : ProductoRepository {
 
-    private val sincronizacionMutex = Mutex()
 
     private inline fun <T> interceptarErroresAuth(bloque: () -> T): T {
         try {
@@ -73,36 +72,6 @@ class ProductoRepositoryOffline(
         val guardado = local.guardarPendiente(producto)
         disparador.solicitar(pe.edu.upeu.pharmamobile2.domain.model.MotivoSync.GUARDADO)
         return guardado
-    }
-
-    override suspend fun sincronizar() = sincronizacionMutex.withLock {
-        interceptarErroresAuth {
-            // FASE 1: Subir productos pendientes ANTES de descargar
-            val pendientes = local.pendientes()
-            for (pendiente in pendientes) {
-                try {
-                    val respuesta = ejecutarLlamada {
-                        api.crear(pendiente.toRequest(categoriaPorDefecto))
-                    }.getOrThrow()
-
-                    val confirmado = respuesta.toDomain()
-                    // Reconciliación atómica: eliminar temporal y guardar confirmado
-                    local.confirmarRegistro(localId = pendiente.id, remoto = confirmado)
-                } catch (e: Exception) {
-                    // Si ocurre un error durante la subida, se detiene la sincronización
-                    // y el producto pendiente permanece protegido localmente para el próximo intento
-                    throw e
-                }
-            }
-
-            // FASE 2: Descargar catálogo remoto y reemplazar únicamente filas sincronizadas
-            val remotos = ejecutarLlamada {
-                api.obtenerProductos().map { it.toDomain() }
-            }.getOrThrow()
-
-            local.reemplazarSincronizados(remotos)
-            local.guardarUltimaSincronizacion(pe.edu.upeu.pharmamobile2.platform.obtenerTiempoActualMs())
-        }
     }
 
     override suspend fun actualizar(producto: Producto): Producto = interceptarErroresAuth {

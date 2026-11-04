@@ -92,6 +92,24 @@ class ProductoRepositoryOfflineTest {
         return Pair(client) { postCount }
     }
 
+    private suspend fun sincronizar(client: HttpClient) {
+        val fixture = pe.edu.upeu.pharmamobile2.testutil.EscenarioSync.crear(testDispatcher)
+        val auth = object : pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository by fixture.auth {
+            override fun esActual(contexto: pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta) = contexto == local.contexto
+            override suspend fun sesionRemota(contexto: pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta) = fixture.auth.sesionRemota(fixture.contexto)
+        }
+        val reloj = fixture.reloj
+        val remoto = pe.edu.upeu.pharmamobile2.data.repository.ProductoRemotoRest(ProductoApi(client), pe.edu.upeu.pharmamobile2.data.remote.AutorizadorSolicitudes(auth), local.contexto)
+        val cola = pe.edu.upeu.pharmamobile2.data.local.ColaProductoLocal(db,local.contexto,reloj,pe.edu.upeu.pharmamobile2.testutil.GeneradorIdsSecuencial(),testDispatcher)
+        val descarga = pe.edu.upeu.pharmamobile2.data.local.DescargaLocal(db,local.contexto)
+        val c = pe.edu.upeu.pharmamobile2.data.sync.CoordinadorSincronizacion(
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.currentCoroutineContext()),
+            pe.edu.upeu.pharmamobile2.domain.usecase.EnviarPendientesUseCase(cola,remoto,auth,local.contexto,reloj),
+            pe.edu.upeu.pharmamobile2.domain.usecase.DescargarCatalogoUseCase(descarga,remoto,auth,local.contexto,reloj,pe.edu.upeu.pharmamobile2.testutil.EsperaFalsa(),pe.edu.upeu.pharmamobile2.testutil.GeneradorIdsSecuencial()),
+            cola,descarga,auth,local.contexto,pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion(),pe.edu.upeu.pharmamobile2.testutil.MonitorFalso())
+        try { c.sincronizar(pe.edu.upeu.pharmamobile2.domain.model.MotivoSync.MANUAL) } finally { c.detener();fixture.cerrar() }
+    }
+
     @Test
     fun test1_sincronizacionConRed_flowEmiteListaCompleta() = runTest(testDispatcher) {
         val respuestaListado = """
@@ -113,7 +131,7 @@ class ProductoRepositoryOfflineTest {
         val repo = ProductoRepositoryOffline(local, api)
 
         // Sincronizar catálogo con red disponible
-        repo.sincronizar()
+        sincronizar(client)
 
         // 1. La base contiene los productos del servidor y el Flow emite la lista completa
         val productos = repo.observar().first()
@@ -194,7 +212,7 @@ class ProductoRepositoryOfflineTest {
         val repo = ProductoRepositoryOffline(local, api)
 
         // Sincronizar con el servidor disponible
-        repo.sincronizar()
+        sincronizar(client)
 
         // Verificaciones:
         // La fila deja de estar marcada como pendiente
@@ -290,12 +308,12 @@ class ProductoRepositoryOfflineTest {
         val repo = ProductoRepositoryOffline(local, api)
 
         // 1ra Sincronización
-        repo.sincronizar()
+        sincronizar(client)
         val conteo1 = repo.observar().first().size
         assertEquals(2, conteo1, "Primera sincronización carga 2 productos")
 
         // 2da Sincronización inmediata
-        repo.sincronizar()
+        sincronizar(client)
         val conteo2 = repo.observar().first().size
         assertEquals(2, conteo2, "Ejecutar la sincronización dos veces seguidas deja la misma cantidad de filas")
         assertEquals(conteo1, conteo2, "No debe haber duplicación de registros")
