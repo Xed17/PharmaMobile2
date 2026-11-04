@@ -81,6 +81,7 @@ val dataModule = module {
     scoped { ObservarProductosUseCase(get()) }
     scoped { ObservarUltimaSincronizacionUseCase(get()) }
     scoped { SincronizarProductosUseCase(get()) }
+    scoped { pe.edu.upeu.pharmamobile2.domain.usecase.RevisarEnvioUseCase(get(),get(),get(),get(),get()) }
     scoped { ListarProductosUseCase(get()) }
     scoped { ObtenerProductoUseCase(get()) }
     scoped { RegistrarProductoUseCase(get()) }

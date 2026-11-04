@@ -1,0 +1,89 @@
+Reusing configuration cache.
+> Task :shared:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:generateAndroidHostTestAssets UP-TO-DATE
+> Task :shared:copyNonXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:androidPreBuild UP-TO-DATE
+> Task :shared:preAndroidMainBuild UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:preAndroidHostTestBuild UP-TO-DATE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :shared:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :shared:generateAndroidHostTestResources UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
+> Task :shared:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:generateComposeResClass UP-TO-DATE
+> Task :shared:processAndroidMainManifest UP-TO-DATE
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:androidJar UP-TO-DATE
+> Task :shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
+> Task :shared:generateCommonMainPharmaDbInterface UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :shared:checkAndroidHostTestAarMetadata UP-TO-DATE
+> Task :shared:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :shared:processAndroidHostTestManifest UP-TO-DATE
+> Task :shared:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:copyAndroidMainComposeResourcesToAndroidAssets UP-TO-DATE
+> Task :shared:mergeAndroidMainAssets UP-TO-DATE
+> Task :shared:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :shared:packageAndroidMainResources UP-TO-DATE
+> Task :shared:compileAndroidMainLibraryResources UP-TO-DATE
+> Task :shared:parseAndroidMainLocalResources UP-TO-DATE
+> Task :shared:mergeAndroidHostTestAssets UP-TO-DATE
+> Task :shared:mapAndroidHostTestSourceSetPaths UP-TO-DATE
+> Task :shared:generateAndroidMainRFile UP-TO-DATE
+> Task :shared:mergeAndroidHostTestResources UP-TO-DATE
+> Task :shared:processAndroidHostTestResources UP-TO-DATE
+> Task :shared:packageAndroidHostTestForUnitTest UP-TO-DATE
+> Task :shared:generateAndroidHostTestConfig UP-TO-DATE
+
+> Task :shared:compileAndroidMain
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/androidMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.android.kt:5:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. Consider using the '-Xexpect-actual-classes' flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/data/remote/EjecutarLlamada.kt:39:41 'typealias IOException = IOException' is deprecated. Use kotlinx.io.IOException instead.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.kt:3:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. Consider using the '-Xexpect-actual-classes' flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/components/ValidatedTextField.kt:32:33 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/pedido/PedidoScreen.kt:91:22 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/pedido/PedidoScreen.kt:142:22 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/producto/ProductoScreen.kt:449:17 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
+
+> Task :shared:processAndroidMainJavaRes UP-TO-DATE
+> Task :shared:bundleAndroidMainClassesToCompileJar
+> Task :shared:bundleAndroidMainClassesToRuntimeJar
+
+> Task :shared:compileAndroidHostTest
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoViewModelTest.kt:213:37 No cast needed.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoViewModelTest.kt:216:37 No cast needed.
+
+> Task :shared:testAndroidHostTest
+
+RevisionEnviosTest > quintoRechazoDeSesionRequiereRehabilitacionYNoQuedaAtrapado FAILED
+    java.lang.AssertionError at RevisionEnviosTest.kt:61
+
+94 tests completed, 1 failed
+
+> Task :shared:testAndroidHostTest FAILED
+
+[Incubating] Problems report is available at: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':shared:testAndroidHostTest'.
+> There were failing tests. See the report at: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/build/reports/tests/testAndroidHostTest/index.html
+
+* Try:
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+
+BUILD FAILED in 35s
+33 actionable tasks: 6 executed, 27 up-to-date
+Configuration cache entry reused.

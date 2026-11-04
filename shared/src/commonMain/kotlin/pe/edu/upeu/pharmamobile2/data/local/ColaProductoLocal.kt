@@ -50,9 +50,9 @@ class ColaProductoLocal(
                 is ResultadoEnvio.Fallo -> {
                     val e = resultado.error
                     val estado = when {
+                        row.intentos >= PoliticaReintento.MAX_INTENTOS -> EstadoEnvio.FALLIDA_AGOTADA
                         e.naturaleza == NaturalezaFallo.SESION -> EstadoEnvio.REQUIERE_SESION
                         e.naturaleza == NaturalezaFallo.PERMISOS -> EstadoEnvio.REQUIERE_PERMISO
-                        row.intentos >= PoliticaReintento.MAX_INTENTOS -> EstadoEnvio.FALLIDA_AGOTADA
                         e.efectoIncierto || e.naturaleza == NaturalezaFallo.TRANSITORIO -> EstadoEnvio.REVISION
                         else -> EstadoEnvio.FALLIDA_PERMANENTE
                     }
