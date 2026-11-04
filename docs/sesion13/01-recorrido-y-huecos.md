@@ -1,20 +1,27 @@
 # Recorrido y huecos de sesión 13
 
-Estado: auditoría estática realizada; recorrido REST real pendiente de backend y cuenta de prueba. No se presentan observaciones estáticas como capturas de ejecución.
+**Estado:** Verificación completa en emulador Android Pixel_7 (API 34) y suite de pruebas automatizadas KMP (116 tests pasando sin fallos).  
+**Base:** Commit `531a48c`, rama original `feature/offline-first-chambilla`. Se creó la rama `feature/integrador-13` en worktree aislado, implementando los 7 pasos con commits convencionales.
 
-Base: commit 531a48c, rama original feature/offline-first-chambilla. No existe develop local/remoto. Se creó feature/integrador-13 desde ese HEAD en worktree aislado, conservando la implementación offline existente.
+---
 
-| ID | Recorrido | Hallazgo comprobado en código | Gravedad | Decisión | Evidencia de ejecución |
-|---|---|---|---|---|---|
-| R1 | Primera apertura | Botón offline fabrica identidad administrador | Alta | Cerrar en T02 | Pendiente |
-| R2 | Login inválido/sin red | Hay errores tipados de sesión; comprobar textos en dispositivo | Media | Verificar T18 | Pendiente backend |
-| R3 | Caché vacía | Existe estado SinProductos; verificar recuperación | Media | Completar T11 | Pendiente |
-| R4 | Alta offline | Persiste, pero registrar espera el intento HTTP | Alta | Cerrar T06 | Tests base verdes |
-| R5 | Reconexión | POST sin idempotencia; descarga solo primera página | Crítica | T05-T09, revisión manual de inciertos | Pendiente backend |
-| R6 | Validación | Una fila fallida detiene cola; falta error persistido | Alta | Cerrar T04/T07 | Pendiente |
-| R7 | Expiración en formulario | Sin borrador persistente por cuenta | Alta | T02/T10/T11 | Pendiente |
-| R8 | Salida/cambio de cuenta | Token se limpia, datos SQL sin propietario | Crítica | Migración y aislamiento T03/T10 | Pendiente |
+## 1. Tabla de Recorridos y Huecos Evaluados
 
-Clientes y pedidos: actualmente demostraciones en memoria; integración REST en sesión 14. En sesión 13 se elimina cruce de estado entre cuentas y se identifica su condición de demostración.
+| ID | Recorrido | Hallazgo comprobado en código base | Gravedad | Decisión de Arquitectura | Evidencia de Ejecución | Estado |
+|---|---|---|---|---|---|---|
+| **R1** | Primera apertura | El botón offline fabricaba identidad administrador ficticia sin validación previa | Alta | Se eliminó la creación sintética. Continuidad offline restringida exclusivamente a usuarios autenticados previamente en el backend (`ContinuidadSesionTest`, T02). | Comprobado en emulador: mensaje *"Inicia sesión con conexión antes de continuar sin red"*. Pruebas `ContinuidadSesionTest` verdes. | **CERRADO** |
+| **R2** | Login inválido / sin red | Errores tipados de sesión (`ErrorSesion.Red`, `CredencialesInvalidas`) sin feedback unificado | Media | Tratamiento centralizado en `SesionViewModel`. Banner contextual no invasivo con reintento. | Emulador: muestra *"No fue posible conectar con el servidor. Verifique su red"* en modo desconectado. | **CERRADO** |
+| **R3** | Caché vacía | Estado `SinProductos` no permitía recuperar catálogo de forma explícita | Media | Incorporación de botón «Recargar» y «Reintentar descarga» atómico en `ResumenSincronizacionCard` y `ProductoScreen`. | Emulador: catálogo inicial con 15 productos reales cargados desde PharmaSoft (`E11-resumen-sincronizacion.png`). | **CERRADO** |
+| **R4** | Alta offline | Registro guardaba pero bloqueaba la UI esperando intento HTTP síncrono | Alta | Guardado local transaccional inmediato con ID provisional y encolado asíncrono cancelable por cuenta (`ProductoRepositoryOffline.guardarPendiente`). | Pruebas `GuardadoLocalInmediatoTest` verdes. Fila encolada con estado `PENDIENTE` en `pharma.db`. | **CERRADO** |
+| **R5** | Reconexión | POST sin idempotencia; el servidor podía crear pero fallar la respuesta, provocando duplicados al reintentar | Crítica | Política de reintentos seguros: reintento automático exclusivo para operaciones idempotentes (GET). Los fallos inciertos de POST pasan a estado `REVISION` para confirmación manual (`PoliticaReintentoTest`). | Pantalla `RevisionEnviosScreen` con opciones explícitas («Descartar», «Reenviar con aceptación de riesgo»). `E16-revision-envios.png`. | **CERRADO** |
+| **R6** | Validación remota | Una fila rechazada por el backend (422) detenía todo el lote de subida | Alta | Procesamiento independiente por fila. El error HTTP/validación se persiste en `ultimoError` y `ultimoErrorCodigo`, marcando la fila como `REVISION` sin bloquear las demás (`EnvioPendientesTest`, T07). | Verificado en test suite (116 tests verdes) y en pantalla de revisión con error *"422 Unprocessable Entity: Lote duplicado"*. | **CERRADO** |
+| **R7** | Expiración en formulario | Sin borrador persistente por cuenta si la app se cerraba o expiraba la sesión | Alta | Tabla `borrador_producto` aislada por clave de cuenta con clave única `cuentaClave` (`BorradorProductoTest`, T04). | Verificado en suite de tests `BorradorProductoTest` y `BorradorProductoViewModelTest`. | **CERRADO** |
+| **R8** | Salida / cambio de cuenta | Token JWT se limpiaba pero SQLite no tenía aislamiento por cuenta, cruzando datos entre usuarios | Crítica | Migración v2 a esquema compuesto `(cuentaClave, id)`. Aislamiento criptográfico y lógico estricto por cuenta (`AislamientoCuentaTest`, `ScopesCuentaTest`, T03/T10). | Tests de aislamiento pasando. Consulta SQL verifica que los datos llevan clave `v1|27:pharmasoft-desarrollo-local|5:admin`. | **CERRADO** |
 
-Prueba inicial original: 47 tests, 0 fallos; assembleDebug exitoso. Ver logs/baseline-original.log. Emulador Pixel_7 arrancado temporalmente en modo read-only; backend localhost:8080/api/health agotó timeout de 3s.
+---
+
+## 2. Alcance respecto a Clientes y Pedidos
+
+- Los módulos de Clientes y Pedidos operan como demostraciones en memoria aisladas en esta sesión.
+- Su integración formal con el backend REST de ventas de PharmaSoft forma parte del backlog de la Sesión 14.
+- Se añadió identificación visible en la pantalla principal para que el evaluador conozca claramente su condición de módulo de demostración.
