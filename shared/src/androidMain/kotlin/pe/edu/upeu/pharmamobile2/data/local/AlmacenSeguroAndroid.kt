@@ -15,21 +15,24 @@ class AlmacenSeguroAndroid(
     }
 
     private val sharedPreferences by lazy {
-        runCatching {
-            EncryptedSharedPreferences.create(
-                context,
-                PREFS_FILENAME,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-        }.getOrElse {
-            context.getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
-        }
+        EncryptedSharedPreferences.create(
+            context, PREFS_FILENAME, masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
+    override suspend fun guardarPerfil(perfil: pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal) {
+        check(sharedPreferences.edit().putString("perfil_validado", kotlinx.serialization.json.Json.encodeToString(pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal.serializer(), perfil)).commit())
+    }
+    override suspend fun obtenerPerfil(): pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal? =
+        sharedPreferences.getString("perfil_validado", null)?.let { kotlinx.serialization.json.Json.decodeFromString(pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal.serializer(), it) }
+    override suspend fun borrarContinuidad() {
+        check(sharedPreferences.edit().remove("perfil_validado").commit())
     }
 
     override suspend fun guardarToken(token: String) {
-        sharedPreferences.edit().putString(KEY_TOKEN, token).apply()
+        check(sharedPreferences.edit().putString(KEY_TOKEN, token).commit())
     }
 
     override suspend fun obtenerToken(): String? {
@@ -39,7 +42,7 @@ class AlmacenSeguroAndroid(
     }
 
     override suspend fun eliminarToken() {
-        sharedPreferences.edit().remove(KEY_TOKEN).apply()
+        check(sharedPreferences.edit().remove(KEY_TOKEN).commit())
     }
 
     companion object {

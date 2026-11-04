@@ -166,22 +166,14 @@ class SesionViewModel(
     }
 
     fun accederModoOffline() {
-        val sesionOffline = pe.edu.upeu.pharmamobile2.domain.model.Sesion(
-            token = "jwt.offline.local.token",
-            username = "admin",
-            nombreCompleto = "Administrador (Modo Offline)",
-            roles = listOf("ROLE_ADMIN"),
-            permisos = setOf("CATALOGO_LEER", "CATALOGO_ESCRIBIR")
-        )
-        _uiState.update {
-            it.copy(
-                estado = EstadoSesion.Autenticada(sesionOffline),
-                estaCargando = false,
-                claveInput = "",
-                errorLogin = null,
-                usernameError = null,
-                claveError = null
-            )
+        viewModelScope.launch {
+            authRepository.habilitarContinuidadLocal()
+                .onSuccess {
+                    authRepository.sesionActual.value?.let { sesion ->
+                        _uiState.update { it.copy(estado = EstadoSesion.Autenticada(sesion), estaCargando = false, claveInput = "", errorLogin = null) }
+                    }
+                }
+                .onFailure { error -> _uiState.update { it.copy(errorLogin = error.message ?: "Primero inicia sesión con conexión") } }
         }
     }
 

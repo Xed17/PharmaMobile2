@@ -28,6 +28,11 @@ import kotlin.test.assertTrue
 class FakeAlmacenSeguro(
     var tokenGuardado: String? = null
 ) : AlmacenSeguro {
+    private var perfil: pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal? = null
+    override suspend fun guardarPerfil(perfil: pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal) { this.perfil = perfil }
+    override suspend fun obtenerPerfil() = perfil
+    override suspend fun borrarContinuidad() { perfil = null }
+
     override suspend fun guardarToken(token: String) {
         tokenGuardado = token
     }

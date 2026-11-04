@@ -30,10 +30,16 @@ import platform.Security.kSecMatchLimitOne
 import platform.Security.kSecReturnData
 import platform.Security.kSecValueData
 
-class AlmacenSeguroIos : AlmacenSeguro {
+class AlmacenSeguroIos(private val account: String = "jwt_token") : AlmacenSeguro {
 
     private val service = "pe.edu.upeu.pharmamobile2"
-    private val account = "jwt_token"
+    private val perfilStore by lazy { AlmacenSeguroIos("perfil_validado") }
+    override suspend fun guardarPerfil(perfil: pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal) {
+        perfilStore.guardarToken(kotlinx.serialization.json.Json.encodeToString(pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal.serializer(), perfil))
+    }
+    override suspend fun obtenerPerfil(): pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal? =
+        perfilStore.obtenerToken()?.let { kotlinx.serialization.json.Json.decodeFromString(pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal.serializer(), it) }
+    override suspend fun borrarContinuidad() { perfilStore.eliminarToken() }
 
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     override suspend fun guardarToken(token: String) {
@@ -49,7 +55,7 @@ class AlmacenSeguroIos : AlmacenSeguro {
 
         val cfQuery = CFBridgingRetain(query) as CFDictionaryRef
         try {
-            SecItemAdd(cfQuery, null)
+            check(SecItemAdd(cfQuery, null) == errSecSuccess) { "No se pudo guardar en Keychain" }
         } finally {
             CFBridgingRelease(cfQuery)
         }
