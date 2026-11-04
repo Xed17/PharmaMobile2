@@ -30,6 +30,7 @@ import pe.edu.upeu.pharmamobile2.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobile2.presentation.detalle.DetalleProductoViewModel
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
 import pe.edu.upeu.pharmamobile2.presentation.sesion.SesionViewModel
+import pe.edu.upeu.pharmamobile2.presentation.sincronizacion.SincronizacionViewModel
 
 val dataModule = module {
     single<pe.edu.upeu.pharmamobile2.domain.port.Reloj> { pe.edu.upeu.pharmamobile2.data.platform.RelojSistema() }
@@ -98,13 +99,23 @@ val dataModule = module {
             actualizarProducto = get(),
             eliminarProducto = get(),
             observarUltimaSincronizacion = get(),
-            productoRepository = get()
+            productoRepository = get(),
+            borradorRepository = get()
         )
     }
     viewModel {
         DetalleProductoViewModel(
             repository = get(),
             compartidor = get()
+        )
+    }
+    viewModel {
+        SincronizacionViewModel(
+            cola = get(),
+            descarga = get(),
+            coordinador = get(),
+            revisarEnvio = get(),
+            reloj = get()
         )
     }
     }

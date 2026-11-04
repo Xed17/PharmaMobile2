@@ -1,14 +1,20 @@
 package pe.edu.upeu.pharmamobile2.data.local
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobile2.domain.model.*
 import pe.edu.upeu.pharmamobile2.domain.repository.DescargaRepository
 
-class DescargaLocal(private val db: PharmaDb, private val contexto: ContextoCuenta) : DescargaRepository {
+class DescargaLocal(
+    private val db: PharmaDb,
+    private val contexto: ContextoCuenta,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+) : DescargaRepository {
     init { require(contexto.clave.isNotBlank() && contexto.clave != "legacy_unassigned") }
     private val q = db.descargaQueries
-    private val local = ProductoLocal(db,contexto)
+    private val local = ProductoLocal(db, contexto, dispatcher)
     override suspend fun actual(): CadenaDescarga? = q.obtener(contexto.clave).executeAsOneOrNull()?.let {
         val estado=EstadoCadena.valueOf(it.estado)
         val error=it.ultimoErrorCodigo?.let { codigo ->

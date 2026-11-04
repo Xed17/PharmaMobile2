@@ -99,7 +99,8 @@ private val CATEGORIAS_DISPONIBLES = listOf(
 fun ProductoScreen(
     viewModel: ProductoViewModel,
     onVerDetalle: (Long) -> Unit = {},
-    onCompartir: ((ProductoUi) -> Unit)? = null
+    onCompartir: ((ProductoUi) -> Unit)? = null,
+    onRevisarEnvios: (() -> Unit)? = null
 ) {
     val state by viewModel.uiState.collectAsState()
     val form = state.formulario
@@ -180,10 +181,12 @@ fun ProductoScreen(
                             Text("🔄 Sincronizar")
                         }
                     }
-                    TextButton(
-                        onClick = { viewModel.simularSincronizacionAntigua() }
-                    ) {
-                        Text("🧪 Simular >24h", style = MaterialTheme.typography.labelSmall)
+                    if (onRevisarEnvios != null) {
+                        OutlinedButton(
+                            onClick = onRevisarEnvios
+                        ) {
+                            Text("Revisar envíos", style = MaterialTheme.typography.labelSmall)
+                        }
                     }
                 }
             }

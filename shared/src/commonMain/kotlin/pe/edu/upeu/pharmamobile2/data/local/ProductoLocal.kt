@@ -20,7 +20,7 @@ class ProductoLocal(
     private val metadatoQueries = db.metadatoQueries
     private val cuenta get() = contexto.clave
 
-    fun observar(): Flow<List<Producto>> = queries.listarTodos(cuenta).asFlow().mapToList(dispatcher).map { rows -> rows.map { it.toDomain() } }
+    fun observar(): Flow<List<Producto>> = queries.listarTodos(cuenta).asFlow().mapToList(dispatcher).map { rows -> rows.map { it.toDomain() } }.catch { if (it is java.sql.SQLException) emit(emptyList()) else throw it }
     fun listar(): List<Producto> = queries.listarTodos(cuenta).executeAsList().map { it.toDomain() }
     fun pendientes(): List<Producto> = queries.listarPendientes(cuenta).executeAsList().map { it.toDomain() }
     fun siguienteIdLocal(): Long = queries.siguienteIdLocal(cuenta).executeAsOneOrNull() ?: -1L
@@ -55,7 +55,7 @@ class ProductoLocal(
     }
     fun contarPendientes(): Long = queries.contarPendientes(cuenta).executeAsOne()
     fun observarUltimaSincronizacion(): Flow<Long?> = metadatoQueries.obtener(cuenta, CLAVE_ULTIMA_SINC)
-        .asFlow().mapToOneOrNull(dispatcher).map { it?.toLongOrNull() }
+        .asFlow().mapToOneOrNull(dispatcher).map { it?.toLongOrNull() }.catch { if (it is java.sql.SQLException) emit(null) else throw it }
     fun obtenerUltimaSincronizacion(): Long? = metadatoQueries.obtener(cuenta, CLAVE_ULTIMA_SINC).executeAsOneOrNull()?.toLongOrNull()
     fun guardarUltimaSincronizacion(timestampMs: Long) { metadatoQueries.guardar(cuenta, CLAVE_ULTIMA_SINC, timestampMs.toString()) }
     private fun ProductoEntity.toDomain() = Producto(id, nombre, precio, stock.toInt(), activo == 1L, categoriaId ?: 0L, categoriaNombre)

@@ -49,7 +49,8 @@ class AislamientoCuentaTest {
 
     @Test
     fun respuestaTardiaDeANoConfirmaNiEscribeEnB() = runTest {
-        val f = EscenarioSync.crear(StandardTestDispatcher(testScheduler))
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val f = EscenarioSync.crear(dispatcher)
         val iniciada = CompletableDeferred<Unit>()
         val liberar = CompletableDeferred<Unit>()
         try {
@@ -68,11 +69,11 @@ class AislamientoCuentaTest {
             liberar.complete(Unit)
             try { envio.await() } catch (_: CancellationException) { }
             assertEquals(EstadoEnvio.ENVIANDO, f.cola.porId(id)!!.estado)
-            val b = ProductoLocal(f.db, ContextoCuenta("B", 2), StandardTestDispatcher(testScheduler))
+            val b = ProductoLocal(f.db, ContextoCuenta("B", 2), dispatcher)
             assertTrue(b.listar().isEmpty())
-            val borradorA = BorradorProductoLocal(f.db, f.contexto)
+            val borradorA = BorradorProductoLocal(f.db, f.contexto, dispatcher)
             borradorA.guardar(BorradorProducto(null, "Privado A", "", "", null, null))
-            assertNull(BorradorProductoLocal(f.db, ContextoCuenta("B", 2)).observar().first())
+            assertNull(BorradorProductoLocal(f.db, ContextoCuenta("B", 2), dispatcher).observar().first())
             f.cola.recuperarInterrumpidos()
             assertEquals(EstadoEnvio.REVISION, f.cola.porId(id)!!.estado)
             assertEquals(1, f.remoto.llamadas)
@@ -84,7 +85,8 @@ class AislamientoCuentaTest {
 
     @Test
     fun salidaConPostEnCursoNoReenviaAlVolver() = runTest {
-        val f = EscenarioSync.crear(StandardTestDispatcher(testScheduler))
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val f = EscenarioSync.crear(dispatcher)
         try {
             val id = f.cola.guardar(Producto(0, "Pendiente A", 10.0, 5)).producto.id
             f.cola.iniciar(id, 1000L)
@@ -102,13 +104,14 @@ class AislamientoCuentaTest {
 
     @Test
     fun borradorAInvisibleEnB() = runTest {
+        val testDispatcher = StandardTestDispatcher(testScheduler)
         val driver = crearDriverPruebas()
         try {
             val db = pe.edu.upeu.pharmamobil.db.PharmaDb(driver)
             val cuentaA = ContextoCuenta("cuenta-A", 1)
             val cuentaB = ContextoCuenta("cuenta-B", 2)
-            val repoA = BorradorProductoLocal(db, cuentaA)
-            val repoB = BorradorProductoLocal(db, cuentaB)
+            val repoA = BorradorProductoLocal(db, cuentaA, testDispatcher)
+            val repoB = BorradorProductoLocal(db, cuentaB, testDispatcher)
 
             repoA.guardar(BorradorProducto(null, "Borrador Secreto A", "12.50", "10", 1L, "Gastro"))
             assertEquals("Borrador Secreto A", repoA.observar().first()?.nombre)

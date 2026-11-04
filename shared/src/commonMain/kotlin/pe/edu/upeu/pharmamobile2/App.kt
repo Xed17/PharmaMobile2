@@ -569,20 +569,36 @@ private fun AppScaffold(
             )
         }
     ) { paddingValues ->
+        val syncVm: pe.edu.upeu.pharmamobile2.presentation.sincronizacion.SincronizacionViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
+        val syncState by syncVm.estado.collectAsState()
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
             when (pantallaActual) {
-                is Screen.Inicio -> InicioScreen()
+                is Screen.Inicio -> InicioScreen(
+                    syncState = syncState,
+                    onSincronizar = { syncVm.sincronizar() },
+                    onRevisarEnvios = { onSelectScreen(Screen.RevisionEnvios) },
+                    onReintentarDescarga = { syncVm.reintentarDescarga() }
+                )
                 is Screen.Productos -> {
                     val viewModel: ProductoViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
                     val detalleVm: DetalleProductoViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
                     ProductoScreen(
                         viewModel = viewModel,
                         onVerDetalle = { id -> onSelectScreen(Screen.DetalleProducto(id)) },
-                        onCompartir = { prod -> detalleVm.compartir(prod.toDomain()) }
+                        onCompartir = { prod -> detalleVm.compartir(prod.toDomain()) },
+                        onRevisarEnvios = { onSelectScreen(Screen.RevisionEnvios) }
+                    )
+                }
+                is Screen.RevisionEnvios -> {
+                    pe.edu.upeu.pharmamobile2.presentation.sincronizacion.RevisionEnviosScreen(
+                        colaRepository = cuentaScope.get(),
+                        onRevisar = { id, dec, riesgo -> syncVm.revisar(id, dec, riesgo) },
+                        onVolver = { onSelectScreen(Screen.Productos) }
                     )
                 }
                 is Screen.DetalleProducto -> {
