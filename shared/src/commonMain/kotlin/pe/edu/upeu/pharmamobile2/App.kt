@@ -178,6 +178,23 @@ fun App() {
 
                 is EstadoSesion.Autenticada -> {
                     val sesion = estado.sesion
+                    val auth: pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository = koinInject()
+                    val accesoActual by auth.acceso.collectAsState()
+                    val acceso = accesoActual as? pe.edu.upeu.pharmamobile2.domain.model.AccesoSesion.Disponible
+                    if (acceso == null) {
+                        PantallaCargandoSesion()
+                    } else {
+                    val contexto = acceso.contexto
+                    val scopes: pe.edu.upeu.pharmamobile2.di.ScopesCuenta = koinInject()
+                    val cuentaScope = remember(contexto) { scopes.abrir(contexto) }
+                    LaunchedEffect(contexto) { cuentaScope.get<pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos>().iniciar() }
+                    val cuentaOwner = remember(contexto) { object : androidx.lifecycle.ViewModelStoreOwner {
+                        override val viewModelStore = androidx.lifecycle.ViewModelStore()
+                    } }
+                    androidx.compose.runtime.DisposableEffect(contexto) {
+                        onDispose { cuentaOwner.viewModelStore.clear(); scopes.cerrarAhora(contexto) }
+                    }
+
                     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                         val width = maxWidth
 
@@ -201,6 +218,8 @@ fun App() {
                                     }
                                 ) {
                                     AppScaffold(
+                                        cuentaScope = cuentaScope,
+                                        cuentaOwner = cuentaOwner,
                                         pantallaActual = pantallaActual,
                                         darkTheme = darkTheme,
                                         onThemeChange = { darkTheme = it },
@@ -272,6 +291,8 @@ fun App() {
 
                                     Box(modifier = Modifier.weight(1f)) {
                                         AppScaffold(
+                                            cuentaScope = cuentaScope,
+                                            cuentaOwner = cuentaOwner,
                                             pantallaActual = pantallaActual,
                                             darkTheme = darkTheme,
                                             onThemeChange = { darkTheme = it },
@@ -316,6 +337,8 @@ fun App() {
                                     }
                                 ) {
                                     AppScaffold(
+                                        cuentaScope = cuentaScope,
+                                        cuentaOwner = cuentaOwner,
                                         pantallaActual = pantallaActual,
                                         darkTheme = darkTheme,
                                         onThemeChange = { darkTheme = it },
@@ -339,6 +362,8 @@ fun App() {
                             }
                         }
                     }
+                }
+
                 }
 
                 is EstadoSesion.ErrorRecuperacion -> {
@@ -500,6 +525,8 @@ private fun DrawerNavigationItems(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppScaffold(
+    cuentaScope: org.koin.core.scope.Scope,
+    cuentaOwner: androidx.lifecycle.ViewModelStoreOwner,
     pantallaActual: Screen,
     darkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit,
@@ -542,24 +569,43 @@ private fun AppScaffold(
             )
         }
     ) { paddingValues ->
+        val syncVm: pe.edu.upeu.pharmamobile2.presentation.sincronizacion.SincronizacionViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
+        val syncState by syncVm.estado.collectAsState()
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
             when (pantallaActual) {
-                is Screen.Inicio -> InicioScreen()
+                is Screen.Inicio -> InicioScreen(
+                    syncState = syncState,
+                    onSincronizar = { syncVm.sincronizar() },
+                    onRevisarEnvios = { onSelectScreen(Screen.RevisionEnvios) },
+                    onReintentarDescarga = { syncVm.reintentarDescarga() },
+                    onSolicitarPermiso = { syncVm.solicitarPermisoAvisos() },
+                    onDescartarPermiso = { syncVm.descartarAvisoPermiso() },
+                    onAbrirAjustes = { syncVm.abrirAjustes() }
+                )
                 is Screen.Productos -> {
-                    val viewModel: ProductoViewModel = koinViewModel()
-                    val detalleVm: DetalleProductoViewModel = koinViewModel()
+                    val viewModel: ProductoViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
+                    val detalleVm: DetalleProductoViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
                     ProductoScreen(
                         viewModel = viewModel,
                         onVerDetalle = { id -> onSelectScreen(Screen.DetalleProducto(id)) },
-                        onCompartir = { prod -> detalleVm.compartir(prod.toDomain()) }
+                        onCompartir = { prod -> detalleVm.compartir(prod.toDomain()) },
+                        onRevisarEnvios = { onSelectScreen(Screen.RevisionEnvios) }
+                    )
+                }
+                is Screen.RevisionEnvios -> {
+                    pe.edu.upeu.pharmamobile2.presentation.sincronizacion.RevisionEnviosScreen(
+                        colaRepository = cuentaScope.get(),
+                        onRevisar = { id, dec, riesgo -> syncVm.revisar(id, dec, riesgo) },
+                        onVolver = { onSelectScreen(Screen.Productos) }
                     )
                 }
                 is Screen.DetalleProducto -> {
-                    val detalleVm: DetalleProductoViewModel = koinViewModel()
+                    val detalleVm: DetalleProductoViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
                     DetalleProductoScreen(
                         productoId = pantallaActual.productoId,
                         viewModel = detalleVm,

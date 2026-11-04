@@ -19,10 +19,10 @@ class ProductoRepositoryOffline(
     private val local: ProductoLocal,
     private val api: ProductoApi,
     private val categoriaPorDefecto: Long = 26L,
-    private val authRepository: AuthRepository? = null
+    private val authRepository: AuthRepository? = null,
+    private val disparador: pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion = pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion()
 ) : ProductoRepository {
 
-    private val sincronizacionMutex = Mutex()
 
     private inline fun <T> interceptarErroresAuth(bloque: () -> T): T {
         try {
@@ -60,52 +60,22 @@ class ProductoRepositoryOffline(
         }
     }
 
-    override suspend fun registrar(producto: Producto): Producto {
-        // 1. Guardar primero en el almacenamiento local como pendiente con ID negativo
-        val pendienteGuardado = local.guardarPendiente(producto)
-
-        // 2. Intentar sincronización en segundo plano (no bloqueante / sin fallar si no hay red)
-        try {
-            sincronizar()
-        } catch (_: Exception) {
-            // Si no hay conexión o falla la sincronización, el producto ya se encuentra
-            // seguro en la base local como pendiente y es visible de inmediato para el usuario.
-        }
-
-        return pendienteGuardado
+    private fun exigirEscritura() {
+        val auth = authRepository ?: return // Direct construction is retained for isolated repository tests; DI always supplies auth.
+        if (!auth.esActual(local.contexto)) throw ErrorApiException(ErrorApi.NoAutorizado)
+        if (auth.sesionActual.value?.puede("CATALOGO_ESCRIBIR") != true)
+            throw ErrorApiException(ErrorApi.SinPermisos("No tienes permiso para modificar el catálogo"))
     }
 
-    override suspend fun sincronizar() = sincronizacionMutex.withLock {
-        interceptarErroresAuth {
-            // FASE 1: Subir productos pendientes ANTES de descargar
-            val pendientes = local.pendientes()
-            for (pendiente in pendientes) {
-                try {
-                    val respuesta = ejecutarLlamada {
-                        api.crear(pendiente.toRequest(categoriaPorDefecto))
-                    }.getOrThrow()
-
-                    val confirmado = respuesta.toDomain()
-                    // Reconciliación atómica: eliminar temporal y guardar confirmado
-                    local.confirmarRegistro(localId = pendiente.id, remoto = confirmado)
-                } catch (e: Exception) {
-                    // Si ocurre un error durante la subida, se detiene la sincronización
-                    // y el producto pendiente permanece protegido localmente para el próximo intento
-                    throw e
-                }
-            }
-
-            // FASE 2: Descargar catálogo remoto y reemplazar únicamente filas sincronizadas
-            val remotos = ejecutarLlamada {
-                api.obtenerProductos().map { it.toDomain() }
-            }.getOrThrow()
-
-            local.reemplazarSincronizados(remotos)
-            local.guardarUltimaSincronizacion(pe.edu.upeu.pharmamobile2.platform.obtenerTiempoActualMs())
-        }
+    override suspend fun registrar(producto: Producto): Producto {
+        exigirEscritura()
+        val guardado = local.guardarPendiente(producto)
+        disparador.solicitar(pe.edu.upeu.pharmamobile2.domain.model.MotivoSync.GUARDADO)
+        return guardado
     }
 
     override suspend fun actualizar(producto: Producto): Producto = interceptarErroresAuth {
+        exigirEscritura()
         val actualizadoRemoto = ejecutarLlamada {
             api.actualizar(
                 id = producto.id,
@@ -118,6 +88,7 @@ class ProductoRepositoryOffline(
     }
 
     override suspend fun eliminar(id: Long): Unit = interceptarErroresAuth {
+        exigirEscritura()
         ejecutarLlamada {
             api.eliminar(id)
         }.getOrThrow()

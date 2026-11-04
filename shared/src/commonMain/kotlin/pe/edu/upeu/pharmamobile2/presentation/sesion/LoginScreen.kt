@@ -421,7 +421,7 @@ fun LoginScreen(
                             FilterChip(
                                 selected = false,
                                 onClick = { viewModel.accederModoOffline() },
-                                label = { Text("🔌 Modo Offline (Catálogo)") }
+                                label = { Text("🔌 Continuar sin conexión") }
                             )
                         }
                     }

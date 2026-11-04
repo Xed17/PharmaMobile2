@@ -1,0 +1,89 @@
+Reusing configuration cache.
+> Task :shared:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:generateAndroidHostTestAssets UP-TO-DATE
+> Task :shared:androidPreBuild UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:preAndroidMainBuild UP-TO-DATE
+> Task :shared:preAndroidHostTestBuild UP-TO-DATE
+> Task :shared:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :shared:generateComposeResClass UP-TO-DATE
+> Task :shared:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:copyNonXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :shared:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :shared:androidJar UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:generateAndroidHostTestResources UP-TO-DATE
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:processAndroidMainManifest UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :shared:generateCommonMainPharmaDbInterface UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :shared:checkAndroidHostTestAarMetadata UP-TO-DATE
+> Task :shared:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:copyAndroidMainComposeResourcesToAndroidAssets UP-TO-DATE
+> Task :shared:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :shared:mergeAndroidMainAssets UP-TO-DATE
+> Task :shared:packageAndroidMainResources UP-TO-DATE
+> Task :shared:compileAndroidMainLibraryResources UP-TO-DATE
+> Task :shared:processAndroidHostTestManifest UP-TO-DATE
+> Task :shared:parseAndroidMainLocalResources UP-TO-DATE
+> Task :shared:mergeAndroidHostTestAssets UP-TO-DATE
+> Task :shared:mapAndroidHostTestSourceSetPaths UP-TO-DATE
+> Task :shared:generateAndroidMainRFile UP-TO-DATE
+> Task :shared:mergeAndroidHostTestResources UP-TO-DATE
+> Task :shared:processAndroidHostTestResources UP-TO-DATE
+> Task :shared:packageAndroidHostTestForUnitTest UP-TO-DATE
+> Task :shared:generateAndroidHostTestConfig UP-TO-DATE
+> Task :shared:compileAndroidMain UP-TO-DATE
+> Task :shared:bundleAndroidMainClassesToRuntimeJar UP-TO-DATE
+> Task :shared:bundleAndroidMainClassesToCompileJar UP-TO-DATE
+> Task :shared:processAndroidMainJavaRes UP-TO-DATE
+
+> Task :shared:compileAndroidHostTest
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoViewModelTest.kt:213:37 No cast needed.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoViewModelTest.kt:216:37 No cast needed.
+
+> Task :shared:testAndroidHostTest
+
+GuardadoLocalInmediatoTest > precioInfinitoSeRechazaAntesDePersistir FAILED
+    java.lang.AssertionError at GuardadoLocalInmediatoTest.kt:38
+
+GuardadoLocalInmediatoTest > guardarNoEsperaALaRed FAILED
+    java.lang.AssertionError at GuardadoLocalInmediatoTest.kt:22
+
+GuardadoLocalInmediatoTest > cancelacionNoSeConvierteEnResultadoFallidoNormal FAILED
+    java.lang.AssertionError at GuardadoLocalInmediatoTest.kt:48
+
+GuardadoLocalInmediatoTest > perfilSinPermisoNoPuedeCrearPendientes FAILED
+    java.lang.AssertionError at GuardadoLocalInmediatoTest.kt:58
+
+4 tests completed, 4 failed
+
+> Task :shared:testAndroidHostTest FAILED
+
+[Incubating] Problems report is available at: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':shared:testAndroidHostTest'.
+> There were failing tests. See the report at: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/build/reports/tests/testAndroidHostTest/index.html
+
+* Try:
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+
+BUILD FAILED in 12s
+33 actionable tasks: 3 executed, 30 up-to-date
+Configuration cache entry reused.

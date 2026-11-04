@@ -12,12 +12,14 @@ data class ProductoUi(
     val categoriaId: Long = 26L,
     val categoriaNombre: String? = null,
     val precioNumerico: Double = 0.0,
-    val esPendiente: Boolean = id < 0
+    val esPendiente: Boolean = id < 0,
+    val estadoEnvioTexto: String? = null,
+    val motivoEstado: String? = null
 ) {
     fun esBajoStock(): Boolean = stock <= 10
 }
 
-fun Producto.toUi(): ProductoUi {
+fun Producto.toUi(estadoTexto: String? = null, motivo: String? = null): ProductoUi {
     return ProductoUi(
         id = id,
         nombre = nombre,
@@ -26,7 +28,10 @@ fun Producto.toUi(): ProductoUi {
         activo = activo,
         categoriaId = categoriaId,
         categoriaNombre = categoriaNombre,
-        precioNumerico = precio
+        precioNumerico = precio,
+        esPendiente = id < 0,
+        estadoEnvioTexto = estadoTexto ?: if (id < 0) "Pendiente" else null,
+        motivoEstado = motivo
     )
 }
 

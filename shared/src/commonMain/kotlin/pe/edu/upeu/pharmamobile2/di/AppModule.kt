@@ -12,7 +12,7 @@ import pe.edu.upeu.pharmamobile2.data.local.ProductoLocal
 import pe.edu.upeu.pharmamobile2.data.remote.ProductoApi
 import pe.edu.upeu.pharmamobile2.data.remote.createHttpClient
 import pe.edu.upeu.pharmamobile2.data.repository.AuthRepositorioRest
-import pe.edu.upeu.pharmamobile2.data.repository.ProductoRepositorioRest
+import pe.edu.upeu.pharmamobile2.data.repository.ProductoRemotoRest
 import pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository
 import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobile2.data.repository.ProductoRepositoryOffline
@@ -30,10 +30,13 @@ import pe.edu.upeu.pharmamobile2.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobile2.presentation.detalle.DetalleProductoViewModel
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
 import pe.edu.upeu.pharmamobile2.presentation.sesion.SesionViewModel
+import pe.edu.upeu.pharmamobile2.presentation.sincronizacion.SincronizacionViewModel
 
 val dataModule = module {
+    single<pe.edu.upeu.pharmamobile2.domain.port.Reloj> { pe.edu.upeu.pharmamobile2.data.platform.RelojSistema() }
+    single<pe.edu.upeu.pharmamobile2.domain.port.Espera> { pe.edu.upeu.pharmamobile2.data.platform.EsperaCoroutines() }
+    single<pe.edu.upeu.pharmamobile2.domain.port.GeneradorIds> { pe.edu.upeu.pharmamobile2.data.platform.GeneradorUuid() }
     single<PharmaDb> { PharmaDb(get<CreadorDeDriver>().crear()) }
-    single { ProductoLocal(get()) }
     single<HttpClient> {
         val baseUrl = runCatching { get<String>(named("baseUrl")) }.getOrDefault("http://10.0.2.2:8080/")
         createHttpClient(
@@ -48,40 +51,44 @@ val dataModule = module {
             almacenSeguro = get()
         )
     }
-    single<ProductoApi> { ProductoApi(get()) }
-    single<ProductoRepository> {
+    single<pe.edu.upeu.pharmamobile2.domain.port.GuardiaCuenta> { get<AuthRepository>() as pe.edu.upeu.pharmamobile2.domain.port.GuardiaCuenta }
+    scope(named("cuenta")) {
+    scoped { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main.immediate) }
+    scoped { ProductoLocal(get(), get()) }
+    scoped { pe.edu.upeu.pharmamobile2.domain.usecase.EnviarPendientesUseCase(get(), get(), get(), get(), get()) }
+    scoped { pe.edu.upeu.pharmamobile2.domain.usecase.DescargarCatalogoUseCase(get(), get(), get(), get(), get(), get(), get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos> {
+        pe.edu.upeu.pharmamobile2.data.sync.CoordinadorSincronizacion(get(), get(), get(), get(), get(), get(), get(), get(), get(), getOrNull())
+    }
+    scoped { pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion() }
+    scoped<ProductoApi> {
+        val auth=get<AuthRepository>()
+        val contexto=get<pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta>()
+        ProductoApi(get()) { auth.sesionRemota(contexto)?.token ?: throw pe.edu.upeu.pharmamobile2.domain.error.ErrorApiException(pe.edu.upeu.pharmamobile2.domain.error.ErrorApi.NoAutorizado) }
+    }
+    scoped { pe.edu.upeu.pharmamobile2.data.remote.AutorizadorSolicitudes(get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.repository.ProductoRemotoRepository> { ProductoRemotoRest(get(),get(),get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.repository.ColaProductoRepository> { pe.edu.upeu.pharmamobile2.data.local.ColaProductoLocal(get(),get(),get(),get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.repository.BorradorProductoRepository> { pe.edu.upeu.pharmamobile2.data.local.BorradorProductoLocal(get(),get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.repository.DescargaRepository> { pe.edu.upeu.pharmamobile2.data.local.DescargaLocal(get(),get()) }
+    scoped<ProductoRepository> {
         ProductoRepositoryOffline(
             local = get(),
             api = get(),
             categoriaPorDefecto = 26L,
-            authRepository = get()
-        )
-    }
-}
-
-val domainModule = module {
-    factory { ObservarProductosUseCase(get()) }
-    factory { ObservarUltimaSincronizacionUseCase(get()) }
-    factory { SincronizarProductosUseCase(get()) }
-    factory { ListarProductosUseCase(get()) }
-    factory { ObtenerProductoUseCase(get()) }
-    factory { RegistrarProductoUseCase(get()) }
-    factory { ActualizarProductoUseCase(get()) }
-    factory { EliminarProductoUseCase(get()) }
-    factory { IniciarSesionUseCase(get()) }
-    factory { RecuperarSesionUseCase(get()) }
-    factory { CerrarSesionUseCase(get()) }
-}
-
-val presentationModule = module {
-    viewModel {
-        SesionViewModel(
             authRepository = get(),
-            iniciarSesionUseCase = get(),
-            recuperarSesionUseCase = get(),
-            cerrarSesionUseCase = get()
+            disparador = get()
         )
     }
+    scoped { ObservarProductosUseCase(get()) }
+    scoped { ObservarUltimaSincronizacionUseCase(get()) }
+    scoped { SincronizarProductosUseCase(get()) }
+    scoped { pe.edu.upeu.pharmamobile2.domain.usecase.RevisarEnvioUseCase(get(),get(),get(),get(),get()) }
+    scoped { ListarProductosUseCase(get()) }
+    scoped { ObtenerProductoUseCase(get()) }
+    scoped { RegistrarProductoUseCase(get()) }
+    scoped { ActualizarProductoUseCase(get()) }
+    scoped { EliminarProductoUseCase(get()) }
     viewModel {
         ProductoViewModel(
             observarProductos = get(),
@@ -92,7 +99,8 @@ val presentationModule = module {
             actualizarProducto = get(),
             eliminarProducto = get(),
             observarUltimaSincronizacion = get(),
-            productoRepository = get()
+            productoRepository = get(),
+            borradorRepository = get()
         )
     }
     viewModel {
@@ -101,6 +109,27 @@ val presentationModule = module {
             compartidor = get()
         )
     }
+    viewModel {
+        SincronizacionViewModel(
+            cola = get(),
+            descarga = get(),
+            coordinador = get(),
+            revisarEnvio = get(),
+            reloj = get(),
+            gestorPermisos = getOrNull()
+        )
+    }
+    }
+}
+
+val domainModule = module {
+    factory { IniciarSesionUseCase(get()) }
+    factory { RecuperarSesionUseCase(get()) }
+    factory { CerrarSesionUseCase(get()) }
+}
+val presentationModule = module {
+    single { ScopesCuenta(getKoin()) }
+    viewModel { SesionViewModel(get(), get(), get(), get()) }
 }
 
 val deviceModule = module {

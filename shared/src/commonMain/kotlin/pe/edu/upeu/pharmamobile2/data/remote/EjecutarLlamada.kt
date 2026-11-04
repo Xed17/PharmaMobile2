@@ -28,10 +28,18 @@ suspend fun <T> ejecutarLlamada(
         Result.failure(
             ErrorApiException(ErrorApi.TiempoAgotado)
         )
-    } catch (e: Throwable) {
-        Result.failure(
-            ErrorApiException(ErrorApi.SinConexion)
-        )
+    } catch (e: pe.edu.upeu.pharmamobile2.domain.model.FalloOperacionException) {
+        Result.failure(e)
+    } catch (e: io.ktor.serialization.ContentConvertException) {
+        Result.failure(ErrorApiException(ErrorApi.DatosInvalidos))
+    } catch (e: kotlinx.serialization.SerializationException) {
+        Result.failure(ErrorApiException(ErrorApi.DatosInvalidos))
+    } catch (e: io.ktor.client.call.NoTransformationFoundException) {
+        Result.failure(ErrorApiException(ErrorApi.DatosInvalidos))
+    } catch (e: io.ktor.utils.io.errors.IOException) {
+        Result.failure(ErrorApiException(ErrorApi.SinConexion))
+    } catch (e: Exception) {
+        Result.failure(ErrorApiException(ErrorApi.Inesperado))
     }
 
 private suspend fun traducirCliente(

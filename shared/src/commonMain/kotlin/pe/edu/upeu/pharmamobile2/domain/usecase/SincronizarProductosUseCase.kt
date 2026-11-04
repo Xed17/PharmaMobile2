@@ -1,11 +1,7 @@
 package pe.edu.upeu.pharmamobile2.domain.usecase
 
-import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
+import pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos
 
-class SincronizarProductosUseCase(
-    private val repository: ProductoRepository
-) {
-    suspend operator fun invoke() {
-        repository.sincronizar()
-    }
+class SincronizarProductosUseCase(private val sincronizador: SincronizadorProductos) {
+    suspend operator fun invoke() = sincronizador.sincronizar()
 }

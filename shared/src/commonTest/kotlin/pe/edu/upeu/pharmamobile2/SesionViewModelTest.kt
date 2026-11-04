@@ -37,6 +37,11 @@ class FakeAuthRepository(
     var errorALoguear: Throwable? = null,
     var errorAlRecuperar: Throwable? = null
 ) : AuthRepository {
+    override val acceso = MutableStateFlow<pe.edu.upeu.pharmamobile2.domain.model.AccesoSesion>(pe.edu.upeu.pharmamobile2.domain.model.AccesoSesion.SinSesion)
+    override suspend fun habilitarContinuidadLocal(): Result<pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta> = Result.failure(IllegalStateException("Sin perfil"))
+    override suspend fun sesionRemota(contexto: pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta): Sesion? = null
+    override fun esActual(contexto: pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta) = false
+
 
     private val _sesionActual = MutableStateFlow<Sesion?>(sesionRetornada)
     override val sesionActual: StateFlow<Sesion?> = _sesionActual.asStateFlow()

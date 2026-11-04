@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "472924621717",
+    "project_id": "pharmamobile2",
+    "storage_bucket": "pharmamobile2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:472924621717:android:3899d4d049ddbb62d9c49c",
+        "android_client_info": {
+          "package_name": "pe.edu.upeu.pharmamobile2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7bDNuobb5fdG6h-yN8ZUag9sA9pMI2EQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,85 @@
+Calculating task graph as no cached configuration is available for tasks: :shared:testAndroidHostTest --tests pe.edu.upeu.pharmamobile2.ProductoRemotoSesion13Test
+> Task :shared:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:generateAndroidHostTestAssets UP-TO-DATE
+> Task :shared:copyNonXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:androidPreBuild UP-TO-DATE
+> Task :shared:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:preAndroidMainBuild UP-TO-DATE
+> Task :shared:preAndroidHostTestBuild UP-TO-DATE
+> Task :shared:generateComposeResClass UP-TO-DATE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :shared:generateAndroidHostTestResources UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:androidJar UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:generateCommonMainPharmaDbInterface UP-TO-DATE
+> Task :shared:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :shared:processAndroidMainManifest UP-TO-DATE
+> Task :shared:checkAndroidHostTestAarMetadata UP-TO-DATE
+> Task :shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :shared:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:processAndroidHostTestManifest UP-TO-DATE
+> Task :shared:copyAndroidMainComposeResourcesToAndroidAssets UP-TO-DATE
+> Task :shared:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :shared:mergeAndroidMainAssets UP-TO-DATE
+> Task :shared:packageAndroidMainResources UP-TO-DATE
+> Task :shared:compileAndroidMainLibraryResources UP-TO-DATE
+> Task :shared:parseAndroidMainLocalResources UP-TO-DATE
+> Task :shared:mapAndroidHostTestSourceSetPaths UP-TO-DATE
+> Task :shared:mergeAndroidHostTestAssets UP-TO-DATE
+> Task :shared:generateAndroidMainRFile UP-TO-DATE
+> Task :shared:mergeAndroidHostTestResources UP-TO-DATE
+> Task :shared:processAndroidHostTestResources UP-TO-DATE
+> Task :shared:packageAndroidHostTestForUnitTest UP-TO-DATE
+> Task :shared:generateAndroidHostTestConfig UP-TO-DATE
+> Task :shared:compileAndroidMain UP-TO-DATE
+> Task :shared:bundleAndroidMainClassesToRuntimeJar UP-TO-DATE
+> Task :shared:bundleAndroidMainClassesToCompileJar UP-TO-DATE
+> Task :shared:processAndroidMainJavaRes UP-TO-DATE
+
+> Task :shared:compileAndroidHostTest
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:40:24 Unresolved reference 'ProductoRemotoRest'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:40:63 Unresolved reference 'AutorizadorSolicitudes'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:41:27 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:58:24 Unresolved reference 'ProductoRemotoRest'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:58:63 Unresolved reference 'AutorizadorSolicitudes'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:73:24 Unresolved reference 'ProductoRemotoRest'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:73:63 Unresolved reference 'AutorizadorSolicitudes'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:74:23 Inapplicable candidate(s): fun <reified T> assertIs(value: Any?, message: String? = ...): T
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:74:32 Unresolved reference 'FalloOperacionException'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/ProductoRemotoSesion13Test.kt:74:100 Unresolved reference 'fallo'.
+
+> Task :shared:compileAndroidHostTest FAILED
+
+[Incubating] Problems report is available at: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':shared:compileAndroidHostTest'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 6s
+32 actionable tasks: 2 executed, 30 up-to-date
+Configuration cache entry stored.

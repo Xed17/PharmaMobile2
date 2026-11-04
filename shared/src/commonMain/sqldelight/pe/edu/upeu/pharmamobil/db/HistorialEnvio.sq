@@ -1,0 +1,15 @@
+CREATE TABLE historial_envio (
+    cuentaClave TEXT NOT NULL,
+    operacionLocalId TEXT NOT NULL,
+    revision INTEGER NOT NULL,
+    intento INTEGER NOT NULL,
+    estado TEXT NOT NULL,
+    codigo TEXT,
+    mensajeSeguro TEXT,
+    instanteMs INTEGER NOT NULL,
+    PRIMARY KEY(cuentaClave, operacionLocalId, revision, intento)
+);
+
+guardar:
+INSERT OR REPLACE INTO historial_envio(cuentaClave, operacionLocalId, revision, intento, estado, codigo, mensajeSeguro, instanteMs)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);

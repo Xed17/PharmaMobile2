@@ -58,6 +58,10 @@ class SharedLogicAndroidHostTest {
         }
 
         val fakeAlmacen = object : AlmacenSeguro {
+            override suspend fun guardarPerfil(perfil: pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal) {}
+            override suspend fun obtenerPerfil(): pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal? = null
+            override suspend fun borrarContinuidad() {}
+
             override suspend fun guardarToken(token: String) {}
             override suspend fun obtenerToken(): String? = null
             override suspend fun eliminarToken() {}
@@ -76,4 +80,4 @@ class SharedLogicAndroidHostTest {
         assertEquals("Paracetamol 500mg", productos.first().nombre)
         assertEquals(3.50, productos.first().precio)
     }
-}
+}

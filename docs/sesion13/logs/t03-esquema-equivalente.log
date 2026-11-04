@@ -1,0 +1,1 @@
+PASS: v1 snapshot + migrations matches current schema; both integrity checks OK

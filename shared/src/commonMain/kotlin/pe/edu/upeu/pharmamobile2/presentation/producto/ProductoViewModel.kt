@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pe.edu.upeu.pharmamobile2.domain.error.ErrorApi
 import pe.edu.upeu.pharmamobile2.domain.error.ErrorApiException
+import pe.edu.upeu.pharmamobile2.domain.model.BorradorProducto
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
+import pe.edu.upeu.pharmamobile2.domain.repository.BorradorProductoRepository
 import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobile2.domain.usecase.ActualizarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.EliminarProductoUseCase
@@ -30,24 +32,9 @@ class ProductoViewModel(
     private val actualizarProducto: ActualizarProductoUseCase,
     private val eliminarProducto: EliminarProductoUseCase,
     private val observarUltimaSincronizacion: ObservarUltimaSincronizacionUseCase? = null,
-    private val productoRepository: ProductoRepository? = null
+    private val productoRepository: ProductoRepository? = null,
+    private val borradorRepository: BorradorProductoRepository? = null
 ) : ViewModel() {
-
-    // Constructor de conveniencia para tests o inicialización directa con repositorio
-    constructor(
-        registrarUseCase: RegistrarProductoUseCase,
-        repository: ProductoRepository
-    ) : this(
-        observarProductos = ObservarProductosUseCase(repository),
-        sincronizarProductos = SincronizarProductosUseCase(repository),
-        listarProductos = ListarProductosUseCase(repository),
-        obtenerProducto = ObtenerProductoUseCase(repository),
-        registrarProducto = registrarUseCase,
-        actualizarProducto = ActualizarProductoUseCase(repository),
-        eliminarProducto = EliminarProductoUseCase(repository),
-        observarUltimaSincronizacion = ObservarUltimaSincronizacionUseCase(repository),
-        productoRepository = repository
-    )
 
     private val _uiState = MutableStateFlow(ProductoUiState())
     val uiState: StateFlow<ProductoUiState> = _uiState.asStateFlow()
@@ -55,6 +42,7 @@ class ProductoViewModel(
     init {
         iniciarObservacion()
         iniciarObservacionSincronizacion()
+        iniciarObservacionBorrador()
         sincronizar()
     }
 
@@ -88,9 +76,45 @@ class ProductoViewModel(
         }
     }
 
-    fun simularSincronizacionAntigua() {
+    private fun iniciarObservacionBorrador() {
+        val repo = borradorRepository ?: return
         viewModelScope.launch {
-            productoRepository?.simularUltimaSincronizacionAntigua()
+            repo.observar().collect { borrador ->
+                if (borrador != null && _uiState.value.formulario.id == null) {
+                    _uiState.update { state ->
+                        if (state.formulario.nombre.isBlank() && state.formulario.precio.isBlank() && state.formulario.stock.isBlank()) {
+                            state.copy(
+                                formulario = state.formulario.copy(
+                                    nombre = borrador.nombre,
+                                    precio = borrador.precioTexto,
+                                    stock = borrador.stockTexto,
+                                    categoriaId = borrador.categoriaId ?: 26L,
+                                    categoriaNombre = borrador.categoriaNombre ?: "Analgésicos"
+                                )
+                            )
+                        } else state
+                    }
+                }
+            }
+        }
+    }
+
+    private fun guardarBorrador() {
+        val repo = borradorRepository ?: return
+        val form = _uiState.value.formulario
+        if (!form.estaEnModoEdicion) {
+            viewModelScope.launch {
+                repo.guardar(
+                    BorradorProducto(
+                        idEdicion = null,
+                        nombre = form.nombre,
+                        precioTexto = form.precio,
+                        stockTexto = form.stock,
+                        categoriaId = form.categoriaId,
+                        categoriaNombre = form.categoriaNombre
+                    )
+                )
+            }
         }
     }
 
@@ -126,24 +150,28 @@ class ProductoViewModel(
         _uiState.update {
             it.copy(formulario = it.formulario.copy(nombre = valor, nombreError = null))
         }
+        guardarBorrador()
     }
 
     fun actualizarPrecio(valor: String) {
         _uiState.update {
             it.copy(formulario = it.formulario.copy(precio = valor, precioError = null))
         }
+        guardarBorrador()
     }
 
     fun actualizarStock(valor: String) {
         _uiState.update {
             it.copy(formulario = it.formulario.copy(stock = valor, stockError = null))
         }
+        guardarBorrador()
     }
 
     fun actualizarCategoria(id: Long, nombre: String) {
         _uiState.update {
             it.copy(formulario = it.formulario.copy(categoriaId = id, categoriaNombre = nombre))
         }
+        guardarBorrador()
     }
 
     fun seleccionarParaEditar(producto: ProductoUi) {
@@ -213,7 +241,7 @@ class ProductoViewModel(
                 _uiState.update {
                     it.copy(
                         operacion = ProductoUiState.Operacion.Inactiva,
-                        mensajeExito = "Producto registrado correctamente"
+                        mensajeExito = "Guardado en este equipo. Pendiente de envío"
                     )
                 }
             }
@@ -277,8 +305,6 @@ class ProductoViewModel(
             }
     }
 
-
-
     private fun manejarFallo(fallo: Throwable) {
         val errorApi = (fallo as? ErrorApiException)?.error
 
@@ -320,12 +346,15 @@ class ProductoViewModel(
         else -> error.toString()
     }
 
-    private fun limpiarFormulario() {
+    fun limpiarFormulario() {
         _uiState.update {
             it.copy(
                 formulario = FormularioProducto(),
                 operacion = ProductoUiState.Operacion.Inactiva
             )
+        }
+        borradorRepository?.let { repo ->
+            viewModelScope.launch { repo.borrar() }
         }
     }
 }

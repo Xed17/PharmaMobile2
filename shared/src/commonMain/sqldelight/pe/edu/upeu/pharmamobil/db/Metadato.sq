@@ -1,13 +1,12 @@
-CREATE TABLE IF NOT EXISTS metadato (
-    clave TEXT NOT NULL PRIMARY KEY,
-    valor TEXT NOT NULL
+CREATE TABLE metadato (
+    cuentaClave TEXT NOT NULL,
+    clave TEXT NOT NULL,
+    valor TEXT NOT NULL,
+    PRIMARY KEY(cuentaClave, clave)
 );
 
 obtener:
-SELECT valor
-FROM metadato
-WHERE clave = :clave;
+SELECT valor FROM metadato WHERE cuentaClave = :cuentaClave AND clave = :clave;
 
 guardar:
-INSERT OR REPLACE INTO metadato(clave, valor)
-VALUES (:clave, :valor);
+INSERT OR REPLACE INTO metadato(cuentaClave, clave, valor) VALUES (:cuentaClave, :clave, :valor);

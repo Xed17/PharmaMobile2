@@ -18,5 +18,7 @@ actual val platformModule: Module = module {
     single<Compartidor> { CompartidorIos() }
     single<AlmacenSeguro> { AlmacenSeguroIos() }
     single<CreadorDeDriver> { CreadorDeDriverIos() }
+    single<pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos> { pe.edu.upeu.pharmamobile2.data.permiso.GestorPermisosIos() }
+    single<pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion> { pe.edu.upeu.pharmamobile2.data.notificacion.NotificadorIos() }
+    single<pe.edu.upeu.pharmamobile2.domain.port.Telemetria> { pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaSegura(pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaIos()) }
 }
-

@@ -57,6 +57,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.androidx.security.crypto)
             implementation(libs.sqldelight.android.driver)
+            implementation(libs.firebase.crashlytics)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

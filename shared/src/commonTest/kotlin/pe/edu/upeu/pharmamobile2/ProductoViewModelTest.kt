@@ -56,7 +56,7 @@ class ProductoViewModelTest {
             return _flow
         }
 
-        override suspend fun sincronizar() {
+        suspend fun sincronizar() {
             throwOnListar?.let { throw it }
             _flow.value = productos.toList()
         }
@@ -99,7 +99,7 @@ class ProductoViewModelTest {
     private fun crearViewModel(repo: FakeProductoRepository): ProductoViewModel {
         return ProductoViewModel(
             observarProductos = pe.edu.upeu.pharmamobile2.domain.usecase.ObservarProductosUseCase(repo),
-            sincronizarProductos = pe.edu.upeu.pharmamobile2.domain.usecase.SincronizarProductosUseCase(repo),
+            sincronizarProductos = pe.edu.upeu.pharmamobile2.domain.usecase.SincronizarProductosUseCase(pe.edu.upeu.pharmamobile2.testutil.SincronizadorPrueba { repo.sincronizar() }),
             listarProductos = ListarProductosUseCase(repo),
             obtenerProducto = ObtenerProductoUseCase(repo),
             registrarProducto = RegistrarProductoUseCase(repo),

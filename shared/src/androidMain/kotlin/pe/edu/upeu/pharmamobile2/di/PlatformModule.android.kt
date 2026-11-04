@@ -14,10 +14,13 @@ import pe.edu.upeu.pharmamobile2.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobile2.platform.CompartidorAndroid
 
 actual val platformModule: Module = module {
+    single<pe.edu.upeu.pharmamobile2.domain.port.MonitorConectividad> { pe.edu.upeu.pharmamobile2.platform.MonitorConectividadAndroid(androidContext()) }
     single<HttpClientEngine> { OkHttp.create() }
     single(named("baseUrl")) { "http://10.0.2.2:8080/" }
     single<Compartidor> { CompartidorAndroid(androidContext()) }
     single<AlmacenSeguro> { AlmacenSeguroAndroid(androidContext()) }
     single<CreadorDeDriver> { CreadorDeDriverAndroid(androidContext()) }
+    single<pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos> { pe.edu.upeu.pharmamobile2.data.permiso.GestorPermisosAndroid(androidContext()) }
+    single<pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion> { pe.edu.upeu.pharmamobile2.data.notificacion.NotificadorAndroid(androidContext(), get()) }
+    single<pe.edu.upeu.pharmamobile2.domain.port.Telemetria> { pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaSegura(pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaFirebase()) }
 }
-

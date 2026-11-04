@@ -19,8 +19,8 @@ fun formatearAntiguedad(timestampMs: Long?, ahoraMs: Long = obtenerTiempoActualM
         diffMinutos < 1 -> "Actualizado hace un momento"
         diffMinutos == 1L -> "Actualizado hace 1 minuto"
         diffMinutos < 60 -> "Actualizado hace $diffMinutos minutos"
-        diffHoras == 1L -> "Actualizado hace 1 hora"
-        diffHoras < 24 -> "Actualizado hace $diffHoras horas"
+        diffHoras == 1L -> "Actualizado hace 1 h"
+        diffHoras < 24 -> "Actualizado hace $diffHoras h"
         diffDias == 1L -> "Actualizado hace 1 día"
         else -> "Actualizado hace $diffDias días"
     }

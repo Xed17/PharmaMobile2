@@ -1,120 +1,63 @@
 package pe.edu.upeu.pharmamobile2.data.local
 
-import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.coroutines.mapToOneOrNull
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import app.cash.sqldelight.coroutines.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobil.db.Producto as ProductoEntity
+import pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
+import kotlin.uuid.Uuid
+import kotlin.uuid.ExperimentalUuidApi
 
 class ProductoLocal(
     private val db: PharmaDb,
+    val contexto: ContextoCuenta,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
+    init { require(contexto.clave.isNotBlank() && contexto.clave != "legacy_unassigned") }
     private val queries = db.productoQueries
     private val metadatoQueries = db.metadatoQueries
+    private val cuenta get() = contexto.clave
 
-    fun observar(): Flow<List<Producto>> =
-        queries.listarTodos()
-            .asFlow()
-            .mapToList(dispatcher)
-            .map { list -> list.map { it.toDomain() } }
+    fun observar(): Flow<List<Producto>> = queries.listarTodos(cuenta).asFlow().mapToList(dispatcher).map { rows -> rows.map { it.toDomain() } }.catch { if (it is java.sql.SQLException) emit(emptyList()) else throw it }
+    fun listar(): List<Producto> = queries.listarTodos(cuenta).executeAsList().map { it.toDomain() }
+    fun pendientes(): List<Producto> = queries.listarPendientes(cuenta).executeAsList().map { it.toDomain() }
+    fun siguienteIdLocal(): Long = queries.siguienteIdLocal(cuenta).executeAsOneOrNull() ?: -1L
 
-    fun pendientes(): List<Producto> =
-        queries.listarPendientes()
-            .executeAsList()
-            .map { it.toDomain() }
-
-    fun siguienteIdLocal(): Long {
-        val siguiente = queries.siguienteIdLocal().executeAsOneOrNull()
-        return siguiente ?: -1L
+    @OptIn(ExperimentalUuidApi::class)
+    fun guardarPendiente(producto: Producto): Producto = db.transactionWithResult {
+        val pendiente = producto.copy(id = siguienteIdLocal())
+        insertar(pendiente, true, Uuid.random().toString())
+        pendiente
     }
-
-    fun guardarPendiente(producto: Producto): Producto {
-        val idLocal = siguienteIdLocal()
-        val pendiente = producto.copy(id = idLocal)
-        queries.insertar(
-            id = pendiente.id,
-            nombre = pendiente.nombre,
-            precio = pendiente.precio,
-            stock = pendiente.stock.toLong(),
-            pendiente = 1L
-        )
-        return pendiente
-    }
-
     fun confirmarRegistro(localId: Long, remoto: Producto) {
         db.transaction {
-            queries.eliminarPorId(localId)
-            queries.insertar(
-                id = remoto.id,
-                nombre = remoto.nombre,
-                precio = remoto.precio,
-                stock = remoto.stock.toLong(),
-                pendiente = 0L
-            )
+            queries.eliminarPorId(cuenta, localId)
+            insertar(remoto, false, null)
         }
     }
-
     fun reemplazarSincronizados(remotos: List<Producto>) {
         db.transaction {
-            queries.borrarSincronizados()
-            remotos.forEach { r ->
-                queries.insertar(
-                    id = r.id,
-                    nombre = r.nombre,
-                    precio = r.precio,
-                    stock = r.stock.toLong(),
-                    pendiente = 0L
-                )
-            }
+            queries.borrarSincronizados(cuenta)
+            remotos.forEach { insertar(it, false, null) }
         }
     }
-
-    fun eliminarLocal(id: Long) {
-        queries.eliminarPorId(id)
-    }
-
+    fun eliminarLocal(id: Long) { queries.eliminarPorId(cuenta, id) }
+    @OptIn(ExperimentalUuidApi::class)
     fun guardarOActualizar(producto: Producto, esPendiente: Boolean = false) {
-        queries.insertar(
-            id = producto.id,
-            nombre = producto.nombre,
-            precio = producto.precio,
-            stock = producto.stock.toLong(),
-            pendiente = if (esPendiente) 1L else 0L
-        )
+        insertar(producto, esPendiente, if(esPendiente) Uuid.random().toString() else null)
     }
-
-    fun contarPendientes(): Long = queries.contarPendientes().executeAsOne()
-
-    fun observarUltimaSincronizacion(): Flow<Long?> =
-        metadatoQueries.obtener(CLAVE_ULTIMA_SINC)
-            .asFlow()
-            .mapToOneOrNull(dispatcher)
-            .map { it?.toLongOrNull() }
-
-    fun obtenerUltimaSincronizacion(): Long? =
-        metadatoQueries.obtener(CLAVE_ULTIMA_SINC).executeAsOneOrNull()?.toLongOrNull()
-
-    fun guardarUltimaSincronizacion(timestampMs: Long) {
-        metadatoQueries.guardar(CLAVE_ULTIMA_SINC, timestampMs.toString())
+    private fun insertar(p: Producto, pendiente: Boolean, operacion: String?) {
+        queries.insertar(cuenta, p.id, p.nombre, p.precio, p.stock.toLong(), if(p.activo) 1L else 0L,
+            p.categoriaId, p.categoriaNombre, if(pendiente) 1L else 0L,
+            if(pendiente) "PENDIENTE" else "CONFIRMADO", operacion)
     }
-
-    private fun ProductoEntity.toDomain(): Producto = Producto(
-        id = id,
-        nombre = nombre,
-        precio = precio,
-        stock = stock.toInt(),
-        activo = true,
-        categoriaId = 26L,
-        categoriaNombre = "Analgésicos"
-    )
-
-    companion object {
-        const val CLAVE_ULTIMA_SINC = "ultima_sincronizacion"
-    }
+    fun contarPendientes(): Long = queries.contarPendientes(cuenta).executeAsOne()
+    fun observarUltimaSincronizacion(): Flow<Long?> = metadatoQueries.obtener(cuenta, CLAVE_ULTIMA_SINC)
+        .asFlow().mapToOneOrNull(dispatcher).map { it?.toLongOrNull() }.catch { if (it is java.sql.SQLException) emit(null) else throw it }
+    fun obtenerUltimaSincronizacion(): Long? = metadatoQueries.obtener(cuenta, CLAVE_ULTIMA_SINC).executeAsOneOrNull()?.toLongOrNull()
+    fun guardarUltimaSincronizacion(timestampMs: Long) { metadatoQueries.guardar(cuenta, CLAVE_ULTIMA_SINC, timestampMs.toString()) }
+    private fun ProductoEntity.toDomain() = Producto(id, nombre, precio, stock.toInt(), activo == 1L, categoriaId ?: 0L, categoriaNombre)
+    companion object { const val CLAVE_ULTIMA_SINC = "ultima_sincronizacion" }
 }

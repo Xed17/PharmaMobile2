@@ -40,22 +40,6 @@ fun createHttpClient(
             )
         }
 
-        install(Auth) {
-            bearer {
-                loadTokens {
-                    val token = almacenSeguro.obtenerToken()
-                    if (!token.isNullOrBlank()) {
-                        BearerTokens(accessToken = token, refreshToken = "")
-                    } else {
-                        null
-                    }
-                }
-                sendWithoutRequest { request ->
-                    !request.url.encodedPath.contains("auth/login")
-                }
-            }
-        }
-
         install(Logging) {
             logger = Logger.DEFAULT
             level = LogLevel.HEADERS

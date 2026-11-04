@@ -1,5 +1,6 @@
 package pe.edu.upeu.pharmamobile2.domain.usecase
 
+import pe.edu.upeu.pharmamobile2.data.InMemoryRepository
 import pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository
 
 class CerrarSesionUseCase(
@@ -7,5 +8,6 @@ class CerrarSesionUseCase(
 ) {
     suspend operator fun invoke() {
         authRepository.cerrarSesion()
+        InMemoryRepository.limpiarDatosDeSesion()
     }
 }
