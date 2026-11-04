@@ -1,6 +1,8 @@
 package pe.edu.upeu.pharmamobile2.domain.port
 
 enum class Permiso {
+    CAMARA,
+    UBICACION,
     NOTIFICACIONES
 }
 

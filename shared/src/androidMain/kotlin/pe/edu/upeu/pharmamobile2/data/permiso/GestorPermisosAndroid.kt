@@ -61,6 +61,7 @@ class GestorPermisosAndroid(
                     }
                 }
             }
+            Permiso.CAMARA, Permiso.UBICACION -> EstadoPermiso.Denegado
         }
     }
 
@@ -129,6 +130,7 @@ class GestorPermisosAndroid(
                     }
                 }
             }
+            Permiso.CAMARA, Permiso.UBICACION -> EstadoPermiso.Denegado
         }
     }
 
@@ -136,3 +138,4 @@ class GestorPermisosAndroid(
         puente.abrirAjustes()
     }
 }
+
