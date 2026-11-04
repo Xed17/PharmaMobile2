@@ -11,3 +11,13 @@ class GeneradorIdsSecuencial : GeneradorIds {
     private var siguiente = 0L
     override fun nuevo() = "operacion-prueba-${++siguiente}"
 }
+class TelemetriaFalsa : Telemetria {
+    val errores = mutableListOf<Pair<Throwable, Map<String, String>>>()
+    val eventos = mutableListOf<Pair<String, Map<String, String>>>()
+    override fun registrarError(e: Throwable, contexto: Map<String, String>) {
+        errores.add(Pair(e, contexto))
+    }
+    override fun registrarEvento(nombre: String, datos: Map<String, String>) {
+        eventos.add(Pair(nombre, datos))
+    }
+}

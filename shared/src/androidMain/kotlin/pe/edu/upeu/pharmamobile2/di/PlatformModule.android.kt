@@ -22,4 +22,5 @@ actual val platformModule: Module = module {
     single<CreadorDeDriver> { CreadorDeDriverAndroid(androidContext()) }
     single<pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos> { pe.edu.upeu.pharmamobile2.data.permiso.GestorPermisosAndroid(androidContext()) }
     single<pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion> { pe.edu.upeu.pharmamobile2.data.notificacion.NotificadorAndroid(androidContext(), get()) }
+    single<pe.edu.upeu.pharmamobile2.domain.port.Telemetria> { pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaSegura(pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaFirebase()) }
 }
