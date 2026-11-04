@@ -12,7 +12,7 @@ import pe.edu.upeu.pharmamobile2.data.local.ProductoLocal
 import pe.edu.upeu.pharmamobile2.data.remote.ProductoApi
 import pe.edu.upeu.pharmamobile2.data.remote.createHttpClient
 import pe.edu.upeu.pharmamobile2.data.repository.AuthRepositorioRest
-import pe.edu.upeu.pharmamobile2.data.repository.ProductoRepositorioRest
+import pe.edu.upeu.pharmamobile2.data.repository.ProductoRemotoRest
 import pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository
 import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobile2.data.repository.ProductoRepositoryOffline
@@ -50,9 +50,16 @@ val dataModule = module {
             almacenSeguro = get()
         )
     }
-    single<ProductoApi> { ProductoApi(get()) }
     scope(named("cuenta")) {
     scoped { ProductoLocal(get(), get()) }
+    scoped { pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion() }
+    scoped<ProductoApi> {
+        val auth=get<AuthRepository>()
+        val contexto=get<pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta>()
+        ProductoApi(get()) { auth.sesionRemota(contexto)?.token ?: throw pe.edu.upeu.pharmamobile2.domain.error.ErrorApiException(pe.edu.upeu.pharmamobile2.domain.error.ErrorApi.NoAutorizado) }
+    }
+    scoped { pe.edu.upeu.pharmamobile2.data.remote.AutorizadorSolicitudes(get()) }
+    scoped<pe.edu.upeu.pharmamobile2.domain.repository.ProductoRemotoRepository> { ProductoRemotoRest(get(),get(),get()) }
     scoped<pe.edu.upeu.pharmamobile2.domain.repository.ColaProductoRepository> { pe.edu.upeu.pharmamobile2.data.local.ColaProductoLocal(get(),get(),get(),get()) }
     scoped<pe.edu.upeu.pharmamobile2.domain.repository.BorradorProductoRepository> { pe.edu.upeu.pharmamobile2.data.local.BorradorProductoLocal(get(),get()) }
     scoped<pe.edu.upeu.pharmamobile2.domain.repository.DescargaRepository> { pe.edu.upeu.pharmamobile2.data.local.DescargaLocal(get(),get()) }
@@ -61,7 +68,8 @@ val dataModule = module {
             local = get(),
             api = get(),
             categoriaPorDefecto = 26L,
-            authRepository = get()
+            authRepository = get(),
+            disparador = get()
         )
     }
     scoped { ObservarProductosUseCase(get()) }

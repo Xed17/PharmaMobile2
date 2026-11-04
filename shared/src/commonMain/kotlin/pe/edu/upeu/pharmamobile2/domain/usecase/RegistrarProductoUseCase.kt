@@ -6,17 +6,21 @@ import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
 class RegistrarProductoUseCase(
     private val repository: ProductoRepository
 ) {
-    suspend operator fun invoke(producto: Producto): Result<Producto> = runCatching {
+    suspend operator fun invoke(producto: Producto): Result<Producto> = try {
         require(producto.nombre.isNotBlank()) {
             "El nombre es obligatorio"
         }
-        require(producto.precio > 0) {
+        require(producto.precio.isFinite() && producto.precio > 0) {
             "El precio debe ser mayor que cero"
         }
         require(producto.stock >= 0) {
             "El stock no puede ser negativo"
         }
 
-        repository.registrar(producto)
+        Result.success(repository.registrar(producto))
+    } catch (cancelacion: kotlinx.coroutines.CancellationException) {
+        throw cancelacion
+    } catch (e: Exception) {
+        Result.failure(e)
     }
 }

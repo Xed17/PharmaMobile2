@@ -1,0 +1,488 @@
+Calculating task graph as no cached configuration is available for tasks: :shared:testAndroidHostTest :androidApp:assembleDebug :shared:tasks --all
+> Task :androidApp:generateDebugAssets UP-TO-DATE
+> Task :androidApp:preBuild UP-TO-DATE
+> Task :shared:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:generateAndroidHostTestAssets UP-TO-DATE
+> Task :shared:androidPreBuild UP-TO-DATE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:preAndroidMainBuild UP-TO-DATE
+> Task :androidApp:preDebugBuild UP-TO-DATE
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :shared:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:preAndroidHostTestBuild UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:convertXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
+
+> Task :shared:tasks
+
+------------------------------------------------------------
+Tasks runnable from project ':shared'
+------------------------------------------------------------
+
+Build tasks
+-----------
+allMetadataJar - Assembles a jar archive containing the metadata for all Kotlin source sets.
+androidSourcesJar - Assembles a jar archive containing the sources of target 'android'.
+assemble - Assembles the outputs of this project.
+assembleAndroidTest - Assembles all the Test applications.
+assembleUnitTest - Assembles all the unit test applications.
+build - Assembles and tests this project.
+buildDependents - Assembles and tests this project and all projects that depend on it.
+buildKotlinToolingMetadata - Build metadata json file containing information about the used Kotlin tooling
+buildNeeded - Assembles and tests this project and all projects it depends on.
+clean - Deletes the build directory.
+cleanAllTests - Deletes all the test results.
+compileAndroidDeviceTestSources
+compileAndroidHostTestSources
+compileAppleMainKotlinMetadata - Compiles a klibrary from the 'appleMain' compilation in target 'metadata'.
+compileIosMainKotlinMetadata - Compiles a klibrary from the 'iosMain' compilation in target 'metadata'.
+compileKotlinIosArm64 - Compiles a klibrary from the 'main' compilation in target 'iosArm64'.
+compileKotlinIosSimulatorArm64 - Compiles a klibrary from the 'main' compilation in target 'iosSimulatorArm64'.
+compileNativeMainKotlinMetadata - Compiles a klibrary from the 'nativeMain' compilation in target 'metadata'.
+compileTestKotlinIosArm64 - Compiles a klibrary from the 'test' compilation in target 'iosArm64'.
+compileTestKotlinIosSimulatorArm64 - Compiles a klibrary from the 'test' compilation in target 'iosSimulatorArm64'.
+embedAndSignAppleFrameworkForXcode - Embed and sign  framework as requested by Xcode's environment variables
+embedSwiftExportForXcode - Embed swift export library as requested by Xcode's environment variables
+extractAndroidMainAnnotations - Extracts Android annotations for the androidMain variant into the archive file
+iosArm64Binaries - Assembles outputs for target 'iosArm64'.
+iosArm64MainBinaries - Links all binaries for compilation 'main' of target 'iosArm64'.
+iosArm64MainKlibrary - Assembles outputs for compilation 'main' of target 'iosArm64'
+iosArm64MetadataElements - Assembles Kotlin metadata of target 'iosArm64'.
+iosArm64SourcesJar - Assembles a jar archive containing the sources of target 'iosArm64'.
+iosArm64TestBinaries - Links all binaries for compilation 'test' of target 'iosArm64'.
+iosArm64TestKlibrary - Assembles outputs for compilation 'test' of target 'iosArm64'
+iosSimulatorArm64Binaries - Assembles outputs for target 'iosSimulatorArm64'.
+iosSimulatorArm64MainBinaries - Links all binaries for compilation 'main' of target 'iosSimulatorArm64'.
+iosSimulatorArm64MainKlibrary - Assembles outputs for compilation 'main' of target 'iosSimulatorArm64'
+iosSimulatorArm64MetadataElements - Assembles Kotlin metadata of target 'iosSimulatorArm64'.
+iosSimulatorArm64SourcesJar - Assembles a jar archive containing the sources of target 'iosSimulatorArm64'.
+iosSimulatorArm64TestBinaries - Links all binaries for compilation 'test' of target 'iosSimulatorArm64'.
+iosSimulatorArm64TestKlibrary - Assembles outputs for compilation 'test' of target 'iosSimulatorArm64'
+linkDebugFrameworkIosArm64 - Links a framework 'debugFramework' for a target 'iosArm64'.
+linkDebugFrameworkIosSimulatorArm64 - Links a framework 'debugFramework' for a target 'iosSimulatorArm64'.
+linkDebugTestIosArm64 - Links a test executable 'debugTest' for a target 'iosArm64'.
+linkDebugTestIosSimulatorArm64 - Links a test executable 'debugTest' for a target 'iosSimulatorArm64'.
+linkIosArm64 - Links all binaries for target 'iosArm64'.
+linkIosSimulatorArm64 - Links all binaries for target 'iosSimulatorArm64'.
+linkReleaseFrameworkIosArm64 - Links a framework 'releaseFramework' for a target 'iosArm64'.
+linkReleaseFrameworkIosSimulatorArm64 - Links a framework 'releaseFramework' for a target 'iosSimulatorArm64'.
+metadataAppleMainClasses - Assembles outputs for compilation 'appleMain' of target 'metadata'
+metadataCommonMainClasses - Assembles outputs for compilation 'commonMain' of target 'metadata'
+metadataIosMainClasses - Assembles outputs for compilation 'iosMain' of target 'metadata'
+metadataMainClasses - Assembles outputs for compilation 'main' of target 'metadata'
+metadataNativeMainClasses - Assembles outputs for compilation 'nativeMain' of target 'metadata'
+metadataSourcesJar - Assembles a jar archive containing the sources of target 'metadata'.
+sourcesJar - Assembles a jar archive containing the sources of target 'kotlin'.
+
+Compose tasks
+-------------
+composeCompatibilityBrowserDistribution - This task combines both js and wasm distributions into one so that wasm application fallback to js target if modern wasm feature are not supported
+
+Help tasks
+----------
+artifactTransforms - Displays the Artifact Transforms that can be executed in project ':shared'.
+buildEnvironment - Displays all buildscript dependencies declared in project ':shared'.
+dependencies - Displays all dependencies declared in project ':shared'.
+dependencyInsight - Displays the insight into a specific dependency in project ':shared'.
+help - Displays a help message.
+javaToolchains - Displays the detected java toolchains.
+kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+outgoingVariants - Displays the outgoing variants of project ':shared'.
+projects - Displays the sub-projects of project ':shared'.
+properties - Displays the properties of project ':shared'.
+resolvableConfigurations - Displays the configurations that can be resolved in project ':shared'.
+tasks - Displays the tasks runnable from project ':shared'.
+
+Ide tasks
+---------
+resolveIdeDependencies - Debugging/Diagnosing task that will resolve dependencies for the IDE
+
+Install tasks
+-------------
+androidUninstallAll - Uninstall all applications.
+installAndroidDeviceTest - Installs the Kotlin multiplatform android plugin.
+uninstallAndroidDeviceTest - Uninstalls the Kotlin multiplatform android plugin.
+
+Interop tasks
+-------------
+cleanNativeDistributionCommonization - Deletes all previously commonized klib's from the Kotlin/Native distribution
+commonize - Aggregator task for all c-interop & Native distribution commonizer tasks
+commonizeNativeDistribution - Invokes the commonizer on platform libraries provided by the Kotlin/Native distribution
+runCommonizer - [Deprecated: Use 'commonize' instead]
+
+Sqldelight tasks
+----------------
+generateCommonMainPharmaDbInterface - Generate commonMain Kotlin interface for PharmaDb
+generateSqlDelightInterface - Aggregation task which runs every interface generation task for every given source
+verifyCommonMainPharmaDbMigration - Verify commonMain PharmaDb migrations and CREATE statements match.
+verifySqlDelightMigration - Aggregation task which runs every migration task for every given source
+
+Verification tasks
+------------------
+allTests - Runs the tests for all targets and create aggregated report
+androidConnectedCheck - Runs all device checks on currently connected devices.
+androidDeviceCheck - Runs all device checks using Device Providers and Test Servers.
+check - Runs all checks.
+checkKotlinGradlePluginConfigurationErrors - Checks that Kotlin Gradle Plugin hasn't reported project configuration errors, failing otherwise. This task always runs before compileKotlin* or similar tasks.
+connectedAndroidDeviceTest - Installs and runs the tests for androidMain on connected devices.
+connectedAndroidTest - Installs and runs instrumentation tests for all flavors on connected devices.
+deviceAndroidTest - Installs and runs instrumentation tests using all Device Providers.
+iosSimulatorArm64Test - Executes Kotlin/Native unit tests for target iosSimulatorArm64.
+testAndroid - Run unit tests for all variants.
+testAndroidHostTest - Run unit tests for the androidMain build.
+
+Xcode tasks
+-----------
+checkXcodeProjectConfiguration - Checks for configuration mismatches between Xcode and Kotlin Gradle project
+convertPbxprojToJson - Converts .pbxproj file to JSON for inspection
+
+Other tasks
+-----------
+androidCompileLintChecks
+androidCreateMockableJar
+androidJar
+androidPreBuild
+assembleAndroidDeviceTest - Assembles main Android output for variant <androidDeviceTest>
+assembleAndroidHostTest - Assembles main Android output for variant <androidHostTest>
+assembleAndroidMain - Assembles main Android output for variant <androidMain>
+assembleIosArm64MainResources
+assembleIosArm64TestResources
+assembleIosSimulatorArm64MainResources
+assembleIosSimulatorArm64TestResources
+bundleAndroidMainAar
+bundleAndroidMainClassesToCompileJar
+bundleAndroidMainClassesToRuntimeJar
+bundleAndroidMainLocalLintAar
+bundleLibRuntimeToDirAndroidMain
+checkAndroidDeviceTestAarMetadata
+checkAndroidDeviceTestDuplicateClasses
+checkAndroidHostTestAarMetadata
+checkAndroidMainAarMetadata
+checkCanSyncComposeResourcesForIos
+checkIosArm64MainComposeLibrariesCompatibility
+checkIosArm64TestComposeLibrariesCompatibility
+checkIosSimulatorArm64MainComposeLibrariesCompatibility
+checkIosSimulatorArm64TestComposeLibrariesCompatibility
+compileAndroidDeviceTest - Compiles the compilation 'deviceTest' in target 'android'.
+compileAndroidDeviceTestNavigationResources
+compileAndroidHostTest - Compiles the compilation 'hostTest' in target 'android'.
+compileAndroidMain - Compiles the compilation 'main' in target 'android'.
+compileAndroidMainLibraryResources
+compileCommonMainKotlinMetadata - Compiles the kotlin sources in compilation 'commonMain' in target 'metadata' to Metadata.
+compileKotlinMetadata - Compiles the kotlin sources in compilation 'main' in target 'metadata' to Metadata.
+compileLint
+compressAndroidDeviceTestAssets
+computeLocalPackageDependencyInputFiles
+consumeConfigAttr
+convertSyntheticImportProjectIntoDefFileIphoneos
+convertSyntheticImportProjectIntoDefFileIphonesimulator
+convertXmlValueResourcesForAndroidDeviceTest
+convertXmlValueResourcesForAndroidHostTest
+convertXmlValueResourcesForAndroidMain
+convertXmlValueResourcesForAppleMain
+convertXmlValueResourcesForAppleTest
+convertXmlValueResourcesForCommonMain
+convertXmlValueResourcesForCommonTest
+convertXmlValueResourcesForIosArm64Main
+convertXmlValueResourcesForIosArm64Test
+convertXmlValueResourcesForIosMain
+convertXmlValueResourcesForIosSimulatorArm64Main
+convertXmlValueResourcesForIosSimulatorArm64Test
+convertXmlValueResourcesForIosTest
+convertXmlValueResourcesForNativeMain
+convertXmlValueResourcesForNativeTest
+copyAndroidDeviceTestComposeResourcesToAndroidAssets
+copyAndroidMainComposeResourcesToAndroidAssets
+copyAndroidMainJniLibsProjectOnly
+copyNonXmlValueResourcesForAndroidDeviceTest
+copyNonXmlValueResourcesForAndroidHostTest
+copyNonXmlValueResourcesForAndroidMain
+copyNonXmlValueResourcesForAppleMain
+copyNonXmlValueResourcesForAppleTest
+copyNonXmlValueResourcesForCommonMain
+copyNonXmlValueResourcesForCommonTest
+copyNonXmlValueResourcesForIosArm64Main
+copyNonXmlValueResourcesForIosArm64Test
+copyNonXmlValueResourcesForIosMain
+copyNonXmlValueResourcesForIosSimulatorArm64Main
+copyNonXmlValueResourcesForIosSimulatorArm64Test
+copyNonXmlValueResourcesForIosTest
+copyNonXmlValueResourcesForNativeMain
+copyNonXmlValueResourcesForNativeTest
+copyTestComposeResourcesForIosArm64
+copyTestComposeResourcesForIosSimulatorArm64
+createAndroidDeviceTestApkListingFileRedirect
+createFullJarAndroidMain
+desugarAndroidDeviceTestFileDependencies
+dexBuilderAndroidDeviceTest
+downloadKotlinNativeDistribution
+exportCommonSourceSetsMetadataLocationsForMetadataApiElements
+exportCrossCompilationMetadataForIosArm64ApiElements
+exportCrossCompilationMetadataForIosSimulatorArm64ApiElements
+exportRootPublicationCoordinatesForMetadataApiElements
+exportTargetPublicationCoordinatesForAndroidApiElements
+exportTargetPublicationCoordinatesForAndroidRuntimeElements
+exportTargetPublicationCoordinatesForIosArm64ApiElements
+exportTargetPublicationCoordinatesForIosSimulatorArm64ApiElements
+extractProguardFiles
+fetchSyntheticImportProjectPackages
+fetchUmbrellaPackageIdentifierForDefault
+generateActualResourceCollectorsForAndroidMain
+generateActualResourceCollectorsForIosArm64Main
+generateActualResourceCollectorsForIosSimulatorArm64Main
+generateAndroidDeviceTestAssets
+generateAndroidDeviceTestResources
+generateAndroidDeviceTestRFile
+generateAndroidDeviceTestSources
+generateAndroidHostTestAssets
+generateAndroidHostTestConfig
+generateAndroidHostTestLintModel
+generateAndroidHostTestResources
+generateAndroidHostTestSources
+generateAndroidMainAssets
+generateAndroidMainEmptyResourceFiles
+generateAndroidMainExternalPublicTxt
+generateAndroidMainRFile
+generateComposeResClass
+generateExpectResourceCollectorsForCommonMain
+generateProjectStructureMetadata - Generates serialized project structure metadata of the current project (for tooling)
+generateResourceAccessorsForAndroidDeviceTest
+generateResourceAccessorsForAndroidHostTest
+generateResourceAccessorsForAndroidMain
+generateResourceAccessorsForAppleMain
+generateResourceAccessorsForAppleTest
+generateResourceAccessorsForCommonMain
+generateResourceAccessorsForCommonTest
+generateResourceAccessorsForIosArm64Main
+generateResourceAccessorsForIosArm64Test
+generateResourceAccessorsForIosMain
+generateResourceAccessorsForIosSimulatorArm64Main
+generateResourceAccessorsForIosSimulatorArm64Test
+generateResourceAccessorsForIosTest
+generateResourceAccessorsForNativeMain
+generateResourceAccessorsForNativeTest
+generateSyntheticLinkageSwiftPMImportProjectForCinteropsAndLdDump
+generateSyntheticLinkageSwiftPMImportProjectForEmbedAndSignLinkage
+generateSyntheticLinkageSwiftPMImportProjectForLinkageForCli
+generateUmbrellaPackageIdentifierBasedResolutionForDefault
+integrateEmbedAndSign
+integrateLinkagePackage
+iosArm64AggregateResources
+iosArm64CopyHierarchicalMultiplatformResources
+iosArm64Klib
+iosArm64ProcessResources - Processes file collection.
+iosArm64ResolveResourcesFromDependencies
+iosArm64ResolveSelfResourcesCopyHierarchicalMultiplatformResources
+iosArm64TestProcessResources - Processes file collection.
+iosArm64ZipMultiplatformResourcesForPublication
+iosSimulatorArm64AggregateResources
+iosSimulatorArm64CopyHierarchicalMultiplatformResources
+iosSimulatorArm64Klib
+iosSimulatorArm64ProcessResources - Processes file collection.
+iosSimulatorArm64ResolveResourcesFromDependencies
+iosSimulatorArm64ResolveSelfResourcesCopyHierarchicalMultiplatformResources
+iosSimulatorArm64TestProcessResources - Processes file collection.
+iosSimulatorArm64ZipMultiplatformResourcesForPublication
+kmpPartiallyResolvedDependenciesChecker
+lintAnalyzeAndroidHostTest - Run lint analysis on the androidHostTest component
+mapAndroidDeviceTestSourceSetPaths
+mapAndroidHostTestSourceSetPaths
+mergeAndroidDeviceTestAssets
+mergeAndroidDeviceTestGeneratedProguardFiles
+mergeAndroidDeviceTestJavaResource
+mergeAndroidDeviceTestJniLibFolders
+mergeAndroidDeviceTestNativeLibs
+mergeAndroidDeviceTestResources
+mergeAndroidHostTestAssets
+mergeAndroidHostTestResources
+mergeAndroidMainAssets
+mergeAndroidMainJavaResource
+mergeAndroidMainJniLibFolders
+mergeAndroidMainNativeLibs
+mergeExtDexAndroidDeviceTest
+mergeLibDexAndroidDeviceTest
+mergeProjectDexAndroidDeviceTest
+metadataAppleMainProcessResources - Processes file collection.
+metadataCommonMainProcessResources - Processes file collection.
+metadataIosMainProcessResources - Processes file collection.
+metadataNativeMainProcessResources - Processes file collection.
+metadataProcessResources - Processes file collection.
+packageAndroidDeviceTest
+packageAndroidDeviceTestResources
+packageAndroidHostTestForUnitTest
+packageAndroidMainResources
+parseAndroidDeviceTestLocalResources
+parseAndroidMainLocalResources
+preAndroidDeviceTestBuild
+preAndroidHostTestBuild
+preAndroidMainBuild
+prepareAndroidMainArtProfile
+prepareComposeResourcesTaskForAndroidDeviceTest
+prepareComposeResourcesTaskForAndroidHostTest
+prepareComposeResourcesTaskForAndroidMain
+prepareComposeResourcesTaskForAppleMain
+prepareComposeResourcesTaskForAppleTest
+prepareComposeResourcesTaskForCommonMain
+prepareComposeResourcesTaskForCommonTest
+prepareComposeResourcesTaskForIosArm64Main
+prepareComposeResourcesTaskForIosArm64Test
+prepareComposeResourcesTaskForIosMain
+prepareComposeResourcesTaskForIosSimulatorArm64Main
+prepareComposeResourcesTaskForIosSimulatorArm64Test
+prepareComposeResourcesTaskForIosTest
+prepareComposeResourcesTaskForNativeMain
+prepareComposeResourcesTaskForNativeTest
+prepareKotlinIdeaImport - Umbrella for all tasks required to run before IDEA/Gradle import
+prepareLintJarForPublish
+processAndroidDeviceTestJavaRes
+processAndroidDeviceTestManifest
+processAndroidDeviceTestNavigationResources
+processAndroidDeviceTestResources
+processAndroidHostTestJavaRes
+processAndroidHostTestManifest
+processAndroidHostTestResources
+processAndroidMainJavaRes
+processAndroidMainManifest
+resolveConfigAttr
+serializeSwiftPMDependenciesMetadataForLockFiles
+setupLldbScript - Generate lldbinit file with imported konan_lldb.py script
+signingConfigWriterAndroidDeviceTest
+stripAndroidDeviceTestDebugSymbols
+syncAndroidMainLibJars
+syncComposeResourcesForIos
+syncPersistedPackageResolvedToSynthetic
+syncSyntheticPackageResolvedToPersisted
+transformAppleMainDependenciesMetadata - Generates serialized dependencies metadata for compilation 'appleMain' (for tooling)
+transformCommonMainDependenciesMetadata - Generates serialized dependencies metadata for compilation 'commonMain' (for tooling)
+transformDependenciesMetadata
+transformIosMainDependenciesMetadata - Generates serialized dependencies metadata for compilation 'iosMain' (for tooling)
+transformNativeMainDependenciesMetadata - Generates serialized dependencies metadata for compilation 'nativeMain' (for tooling)
+validateSigningAndroidDeviceTest
+writeAndroidDeviceTestSigningConfigVersions
+writeAndroidMainAarMetadata
+xcodeVersion
+
+Rules
+-----
+Pattern: clean<TaskName>: Cleans the output files of a task.
+Pattern: build<ConfigurationName>: Assembles the artifacts of a configuration.
+
+> Task :shared:copyNonXmlValueResourcesForCommonMain
+> Task :shared:generateExpectResourceCollectorsForCommonMain
+> Task :shared:generateComposeResClass
+> Task :shared:generateAndroidMainEmptyResourceFiles
+> Task :androidApp:desugarDebugFileDependencies
+> Task :shared:prepareComposeResourcesTaskForCommonMain
+> Task :shared:generateAndroidHostTestResources
+> Task :shared:generateResourceAccessorsForCommonMain
+> Task :androidApp:generateDebugResources
+> Task :shared:copyAndroidMainComposeResourcesToAndroidAssets
+> Task :androidApp:writeDebugAppMetadata
+> Task :androidApp:createDebugCompatibleScreenManifests
+> Task :androidApp:extractDeepLinksDebug
+> Task :shared:generateActualResourceCollectorsForAndroidMain
+> Task :androidApp:processDebugNavigationResources
+> Task :shared:writeAndroidMainAarMetadata
+> Task :androidApp:javaPreCompileDebug
+> Task :androidApp:compileDebugNavigationResources
+> Task :androidApp:mergeDebugJniLibFolders
+> Task :shared:mergeAndroidMainJniLibFolders
+> Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :shared:mergeAndroidMainAssets
+> Task :androidApp:writeDebugSigningConfigVersions
+> Task :androidApp:mergeDebugAssets
+> Task :shared:mergeAndroidHostTestAssets
+> Task :shared:copyAndroidMainJniLibsProjectOnly
+> Task :androidApp:validateSigningDebug
+> Task :shared:packageAndroidMainResources
+> Task :shared:mapAndroidHostTestSourceSetPaths
+> Task :androidApp:mapDebugSourceSetPaths
+> Task :shared:compileAndroidMainLibraryResources
+> Task :androidApp:checkDebugAarMetadata
+> Task :shared:checkAndroidHostTestAarMetadata
+> Task :androidApp:compressDebugAssets
+> Task :shared:androidJar
+> Task :androidApp:mergeDebugNativeLibs
+> Task :shared:processAndroidMainManifest
+> Task :androidApp:packageDebugResources
+> Task :shared:parseAndroidMainLocalResources
+
+> Task :androidApp:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so. Run with --info option to learn more.
+
+> Task :androidApp:parseDebugLocalResources
+> Task :shared:generateAndroidMainRFile
+> Task :androidApp:generateDebugRFile
+> Task :shared:processAndroidHostTestManifest
+> Task :androidApp:processDebugMainManifest
+> Task :androidApp:processDebugManifest
+> Task :androidApp:processDebugManifestForPackage
+> Task :androidApp:checkDebugDuplicateClasses
+
+> Task :shared:generateCommonMainPharmaDbInterface
+WARN: Attempt to load key 'ide.hide.excluded.files' for not yet loaded registry
+WARN: Attempt to load key 'psi.sleep.in.validity.check' for not yet loaded registry
+WARN: Attempt to load key 'psi.incremental.reparse.depth.limit' for not yet loaded registry
+
+> Task :shared:mergeAndroidHostTestResources
+> Task :androidApp:mergeDebugResources
+> Task :shared:processAndroidHostTestResources
+> Task :androidApp:processDebugResources
+> Task :shared:packageAndroidHostTestForUnitTest
+> Task :shared:generateAndroidHostTestConfig
+> Task :androidApp:mergeExtDexDebug
+> Task :shared:compileAndroidMain
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/androidMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.android.kt:5:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. Consider using the '-Xexpect-actual-classes' flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/platform/InfoDispositivo.kt:3:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. Consider using the '-Xexpect-actual-classes' flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/components/ValidatedTextField.kt:32:33 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/pedido/PedidoScreen.kt:91:22 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/pedido/PedidoScreen.kt:142:22 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
+w: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobile2/presentation/producto/ProductoScreen.kt:449:17 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
+
+> Task :shared:processAndroidMainJavaRes
+> Task :shared:bundleAndroidMainClassesToCompileJar
+> Task :shared:bundleAndroidMainClassesToRuntimeJar
+> Task :shared:bundleLibRuntimeToDirAndroidMain
+
+> Task :shared:compileAndroidHostTest
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:4:41 Unresolved reference 'sync'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:8:28 Unresolved reference 'PoliticaReintento'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:15:21 Unresolved reference 'FalloOperacion'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:15:36 Unresolved reference 'NaturalezaFallo'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:20:24 Unresolved reference 'FalloOperacion'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:20:39 Unresolved reference 'NaturalezaFallo'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:23:22 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:23:29 Unresolved reference 'NaturalezaFallo'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:23:57 Unresolved reference 'NaturalezaFallo'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:23:81 Unresolved reference 'NaturalezaFallo'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:24:74 Cannot infer type for type parameter 'K'. Specify it explicitly.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:24:74 Cannot infer type for type parameter 'V'. Specify it explicitly.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:24:74 This declaration needs opt-in. Its usage must be marked with '@kotlin.ExperimentalStdlibApi' or '@OptIn(kotlin.ExperimentalStdlibApi::class)'
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:28:47 Unresolved reference 'EstadoEnvio'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:29:47 Unresolved reference 'EstadoEnvio'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:30:48 Unresolved reference 'EstadoEnvio'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:31:24 Unresolved reference 'EstadoEnvio'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:31:44 Method 'iterator()' is ambiguous for this expression. Applicable candidates:
+fun <T> Enumeration<T>.iterator(): Iterator<T>
+fun <T> Iterator<T>.iterator(): Iterator<T>
+fun <K, V> Map<out K, V>.iterator(): Iterator<Map.Entry<K, V>>
+fun <K, V> MutableMap<K, V>.iterator(): MutableIterator<MutableMap.MutableEntry<K, V>>
+fun CharSequence.iterator(): CharIterator
+fun BufferedInputStream.iterator(): ByteIterator
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:31:53 Unresolved reference 'it'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:31:59 Unresolved reference 'EstadoEnvio'.
+e: file:///C:/Users/USER/.codex/worktrees/sesion13-integrador/PharmaMobile2/shared/src/commonTest/kotlin/pe/edu/upeu/pharmamobile2/PoliticaReintentoTest.kt:34:80 Unresolved reference 'EstadoEnvio'.
+
+> Task :shared:compileAndroidHostTest FAILED

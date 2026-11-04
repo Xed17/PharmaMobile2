@@ -93,7 +93,7 @@ class AuthRepositorioRest(
         val token = almacenSeguro.obtenerToken()
         if (token.isNullOrBlank()) return Result.success(null)
         return try {
-            val dto: UsuarioActualDto = client.get("api/v1/auth/me").body()
+            val dto: UsuarioActualDto = client.get("api/v1/auth/me") { bearerAuth(token) }.body()
             val sesion = dto.toDomain(token)
             val anterior = almacenSeguro.obtenerPerfil()?.takeIf { it.username == dto.username }
             // /me does not provide a fresh expiry; an unknown deadline cannot authorize writes.

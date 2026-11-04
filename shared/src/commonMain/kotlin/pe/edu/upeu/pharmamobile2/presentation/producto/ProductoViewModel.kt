@@ -213,7 +213,7 @@ class ProductoViewModel(
                 _uiState.update {
                     it.copy(
                         operacion = ProductoUiState.Operacion.Inactiva,
-                        mensajeExito = "Producto registrado correctamente"
+                        mensajeExito = "Guardado en este equipo. Pendiente de envío"
                     )
                 }
             }

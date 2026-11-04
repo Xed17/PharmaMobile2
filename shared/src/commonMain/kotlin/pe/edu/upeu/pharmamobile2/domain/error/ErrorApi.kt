@@ -11,6 +11,8 @@ sealed interface ErrorApi {
     data class SinPermisos(val mensaje: String = "No tienes permiso para esta operación") : ErrorApi
     data object Servidor : ErrorApi
     data object SinConexion : ErrorApi
+    data object DatosInvalidos : ErrorApi
+    data object Inesperado : ErrorApi
     data object TiempoAgotado : ErrorApi
 }
 
