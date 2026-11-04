@@ -1,0 +1,3 @@
+package pe.edu.upeu.pharmamobile2.domain.model
+
+enum class EstadoEnvio { PENDIENTE, ENVIANDO, CONFIRMADO, REVISION, FALLIDA_PERMANENTE, FALLIDA_AGOTADA, REQUIERE_SESION, REQUIERE_PERMISO }
