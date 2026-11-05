@@ -22,7 +22,7 @@ Manual-Arquitectura-PharmaMobil*
 Manual-Arquitectura-PharmaMobile*
 mapa_capas_pharmamobil.png
 ~$*
-*.docx
-*.pdf
+!docs/sesion13/*.pdf
+!docs/sesion13/evidencias/*.png
 scratch/
 evidencias/
