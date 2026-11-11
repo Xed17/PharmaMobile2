@@ -4,6 +4,9 @@ import org.koin.core.Koin
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import pe.edu.upeu.pharmamobile2.domain.model.ContextoCuenta
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import pe.edu.upeu.pharmamobile2.domain.port.DisparadorSincronizacion
 
 /** Owned by the session lifecycle; account and generation are immutable in each scope. */
 class ScopesCuenta(private val koin: Koin) {
@@ -15,8 +18,8 @@ class ScopesCuenta(private val koin: Koin) {
     }
     fun cerrarAhora(contexto: ContextoCuenta) {
         abiertos.remove(contexto)?.let { scope ->
-            scope.getOrNull<kotlinx.coroutines.CoroutineScope>()?.coroutineContext?.get(kotlinx.coroutines.Job)?.cancel()
-            scope.getOrNull<pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion>()?.cerrar()
+            scope.getOrNull<CoroutineScope>()?.coroutineContext?.get(Job)?.cancel()
+            scope.getOrNull<DisparadorSincronizacion>()?.cerrar()
             scope.close()
         }
     }

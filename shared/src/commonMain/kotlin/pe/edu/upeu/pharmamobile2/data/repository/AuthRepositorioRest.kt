@@ -10,7 +10,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguro
 import pe.edu.upeu.pharmamobile2.data.remote.dto.*
-import pe.edu.upeu.pharmamobile2.data.remote.limpiarTokensAuth
 import pe.edu.upeu.pharmamobile2.data.remote.mapper.*
 import pe.edu.upeu.pharmamobile2.domain.model.*
 import pe.edu.upeu.pharmamobile2.domain.port.GuardiaCuenta
@@ -85,7 +84,6 @@ class AuthRepositorioRest(
                     almacenSeguro.borrarContinuidad()
                     throw e
                 }
-                client.limpiarTokensAuth()
                 activar(sesion, perfil, ModoAcceso.REMOTO)
             }
             Result.success(sesion)
@@ -129,7 +127,6 @@ class AuthRepositorioRest(
         } catch (e: Throwable) {
             if (e is ClientRequestException && e.response.status.value == 401) {
                 almacenSeguro.eliminarToken()
-                client.limpiarTokensAuth()
                 notificar401()
                 Result.failure(SesionException(ErrorSesion.SesionExpirada()))
             } else Result.failure(SesionException(e.toErrorSesion()))
@@ -143,7 +140,6 @@ class AuthRepositorioRest(
             perfilActual = null
             almacenSeguro.eliminarToken()
             almacenSeguro.borrarContinuidad()
-            client.limpiarTokensAuth()
         }
     }
     override fun notificar401() {

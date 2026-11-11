@@ -12,6 +12,7 @@ import pe.edu.upeu.pharmamobile2.domain.usecase.RevisarEnvioUseCase
 import pe.edu.upeu.pharmamobile2.presentation.sincronizacion.SincronizacionViewModel
 import pe.edu.upeu.pharmamobile2.testutil.EscenarioSync
 import kotlin.test.*
+import pe.edu.upeu.pharmamobile2.domain.port.DisparadorSincronizacion
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SincronizacionViewModelTest {
@@ -50,7 +51,7 @@ class SincronizacionViewModelTest {
                 override suspend fun reintentarDescarga() = ResumenSincronizacion(0, 0, 0, 0, 0, false, null)
                 override suspend fun detener() {}
             }
-            val disparador = pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion()
+            val disparador = DisparadorSincronizacion()
             val revisarUseCase = RevisarEnvioUseCase(f.cola, f.auth, f.contexto, f.reloj, disparador)
             val vm = SincronizacionViewModel(
                 cola = f.cola,
@@ -90,7 +91,7 @@ class SincronizacionViewModelTest {
                 override suspend fun reintentarDescarga() = ResumenSincronizacion(0, 0, 0, 0, 0, false, null)
                 override suspend fun detener() {}
             }
-            val disparador = pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion()
+            val disparador = DisparadorSincronizacion()
             val revisarUseCase = RevisarEnvioUseCase(f.cola, f.auth, f.contexto, f.reloj, disparador)
             val vm = SincronizacionViewModel(
                 cola = f.cola,
@@ -129,7 +130,7 @@ class SincronizacionViewModelTest {
                 }
                 override fun abrirAjustes() {}
             }
-            val disparador = pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion()
+            val disparador = DisparadorSincronizacion()
             val revisarUseCase = RevisarEnvioUseCase(f.cola, f.auth, f.contexto, f.reloj, disparador)
             val vm = SincronizacionViewModel(
                 cola = f.cola,

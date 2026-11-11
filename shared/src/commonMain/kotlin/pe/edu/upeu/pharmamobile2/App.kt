@@ -81,6 +81,16 @@ import pe.edu.upeu.pharmamobile2.presentation.sesion.SesionViewModel
 import pe.edu.upeu.pharmamobile2.theme.PharmaMobilTheme
 import pharmamobile2.shared.generated.resources.Res
 import pharmamobile2.shared.generated.resources.compose_multiplatform
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import org.koin.core.scope.Scope
+import pe.edu.upeu.pharmamobile2.di.ScopesCuenta
+import pe.edu.upeu.pharmamobile2.domain.model.AccesoSesion
+import pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos
+import pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository
+import pe.edu.upeu.pharmamobile2.presentation.sincronizacion.RevisionEnviosScreen
+import pe.edu.upeu.pharmamobile2.presentation.sincronizacion.SincronizacionViewModel
 
 private val ArrowBackIcon: ImageVector by lazy {
     ImageVector.Builder(
@@ -178,20 +188,20 @@ fun App() {
 
                 is EstadoSesion.Autenticada -> {
                     val sesion = estado.sesion
-                    val auth: pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository = koinInject()
+                    val auth: AuthRepository = koinInject()
                     val accesoActual by auth.acceso.collectAsState()
-                    val acceso = accesoActual as? pe.edu.upeu.pharmamobile2.domain.model.AccesoSesion.Disponible
+                    val acceso = accesoActual as? AccesoSesion.Disponible
                     if (acceso == null) {
                         PantallaCargandoSesion()
                     } else {
                     val contexto = acceso.contexto
-                    val scopes: pe.edu.upeu.pharmamobile2.di.ScopesCuenta = koinInject()
+                    val scopes: ScopesCuenta = koinInject()
                     val cuentaScope = remember(contexto) { scopes.abrir(contexto) }
-                    LaunchedEffect(contexto) { cuentaScope.get<pe.edu.upeu.pharmamobile2.domain.port.SincronizadorProductos>().iniciar() }
-                    val cuentaOwner = remember(contexto) { object : androidx.lifecycle.ViewModelStoreOwner {
-                        override val viewModelStore = androidx.lifecycle.ViewModelStore()
+                    LaunchedEffect(contexto) { cuentaScope.get<SincronizadorProductos>().iniciar() }
+                    val cuentaOwner = remember(contexto) { object : ViewModelStoreOwner {
+                        override val viewModelStore = ViewModelStore()
                     } }
-                    androidx.compose.runtime.DisposableEffect(contexto) {
+                    DisposableEffect(contexto) {
                         onDispose { cuentaOwner.viewModelStore.clear(); scopes.cerrarAhora(contexto) }
                     }
 
@@ -525,8 +535,8 @@ private fun DrawerNavigationItems(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppScaffold(
-    cuentaScope: org.koin.core.scope.Scope,
-    cuentaOwner: androidx.lifecycle.ViewModelStoreOwner,
+    cuentaScope: Scope,
+    cuentaOwner: ViewModelStoreOwner,
     pantallaActual: Screen,
     darkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit,
@@ -569,7 +579,7 @@ private fun AppScaffold(
             )
         }
     ) { paddingValues ->
-        val syncVm: pe.edu.upeu.pharmamobile2.presentation.sincronizacion.SincronizacionViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
+        val syncVm: SincronizacionViewModel = koinViewModel(scope = cuentaScope, viewModelStoreOwner = cuentaOwner)
         val syncState by syncVm.estado.collectAsState()
 
         Box(
@@ -598,7 +608,7 @@ private fun AppScaffold(
                     )
                 }
                 is Screen.RevisionEnvios -> {
-                    pe.edu.upeu.pharmamobile2.presentation.sincronizacion.RevisionEnviosScreen(
+                    RevisionEnviosScreen(
                         colaRepository = cuentaScope.get(),
                         onRevisar = { id, dec, riesgo -> syncVm.revisar(id, dec, riesgo) },
                         onVolver = { onSelectScreen(Screen.Productos) }

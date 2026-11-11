@@ -12,15 +12,26 @@ import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriver
 import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriverAndroid
 import pe.edu.upeu.pharmamobile2.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobile2.platform.CompartidorAndroid
+import pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaFirebase
+import pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaSegura
+import pe.edu.upeu.pharmamobile2.data.notificacion.NotificadorAndroid
+import pe.edu.upeu.pharmamobile2.data.permiso.GestorPermisosAndroid
+import pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos
+import pe.edu.upeu.pharmamobile2.domain.port.MonitorConectividad
+import pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion
+import pe.edu.upeu.pharmamobile2.domain.port.Telemetria
+import pe.edu.upeu.pharmamobile2.platform.MonitorConectividadAndroid
+
+import pe.edu.upeu.pharmamobile2.data.remote.ApiConfig
 
 actual val platformModule: Module = module {
-    single<pe.edu.upeu.pharmamobile2.domain.port.MonitorConectividad> { pe.edu.upeu.pharmamobile2.platform.MonitorConectividadAndroid(androidContext()) }
+    single<MonitorConectividad> { MonitorConectividadAndroid(androidContext()) }
     single<HttpClientEngine> { OkHttp.create() }
-    single(named("baseUrl")) { "http://10.0.2.2:8080/" }
+    single(named("baseUrl")) { ApiConfig.URL_EMULADOR_ANDROID }
     single<Compartidor> { CompartidorAndroid(androidContext()) }
     single<AlmacenSeguro> { AlmacenSeguroAndroid(androidContext()) }
     single<CreadorDeDriver> { CreadorDeDriverAndroid(androidContext()) }
-    single<pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos> { pe.edu.upeu.pharmamobile2.data.permiso.GestorPermisosAndroid(androidContext()) }
-    single<pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion> { pe.edu.upeu.pharmamobile2.data.notificacion.NotificadorAndroid(androidContext(), get()) }
-    single<pe.edu.upeu.pharmamobile2.domain.port.Telemetria> { pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaSegura(pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaFirebase()) }
+    single<GestorPermisos> { GestorPermisosAndroid(androidContext()) }
+    single<NotificadorSincronizacion> { NotificadorAndroid(androidContext(), get()) }
+    single<Telemetria> { TelemetriaSegura(TelemetriaFirebase()) }
 }

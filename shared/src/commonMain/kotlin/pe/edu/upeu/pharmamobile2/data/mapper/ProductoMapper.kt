@@ -4,18 +4,20 @@ import pe.edu.upeu.pharmamobile2.data.remote.dto.ProductoRequestDto
 import pe.edu.upeu.pharmamobile2.data.remote.dto.ProductoResponseDto
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
 
+import pe.edu.upeu.pharmamobile2.domain.model.CategoriaPredeterminada
+
 fun ProductoResponseDto.toDomain(): Producto = Producto(
     id = id,
     nombre = nombre,
     precio = precio,
     stock = stock,
     activo = estado,
-    categoriaId = categoriaId ?: 26L,
+    categoriaId = categoriaId ?: CategoriaPredeterminada.ID,
     categoriaNombre = categoriaNombre ?: "General"
 )
 
 fun Producto.toRequest(
-    categoriaPorDefecto: Long = 26L
+    categoriaPorDefecto: Long = CategoriaPredeterminada.ID
 ): ProductoRequestDto = ProductoRequestDto(
     nombre = nombre,
     precio = precio,

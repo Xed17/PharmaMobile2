@@ -10,6 +10,8 @@ import pe.edu.upeu.pharmamobile2.domain.model.Producto
 import kotlin.uuid.Uuid
 import kotlin.uuid.ExperimentalUuidApi
 
+import pe.edu.upeu.pharmamobile2.domain.model.EstadoEnvio
+
 class ProductoLocal(
     private val db: PharmaDb,
     val contexto: ContextoCuenta,
@@ -51,7 +53,7 @@ class ProductoLocal(
     private fun insertar(p: Producto, pendiente: Boolean, operacion: String?) {
         queries.insertar(cuenta, p.id, p.nombre, p.precio, p.stock.toLong(), if(p.activo) 1L else 0L,
             p.categoriaId, p.categoriaNombre, if(pendiente) 1L else 0L,
-            if(pendiente) "PENDIENTE" else "CONFIRMADO", operacion)
+            if(pendiente) EstadoEnvio.PENDIENTE.name else EstadoEnvio.CONFIRMADO.name, operacion)
     }
     fun contarPendientes(): Long = queries.contarPendientes(cuenta).executeAsOne()
     fun observarUltimaSincronizacion(): Flow<Long?> = metadatoQueries.obtener(cuenta, CLAVE_ULTIMA_SINC)

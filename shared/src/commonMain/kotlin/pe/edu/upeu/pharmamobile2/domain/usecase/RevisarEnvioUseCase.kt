@@ -1,10 +1,10 @@
 package pe.edu.upeu.pharmamobile2.domain.usecase
 
 import kotlinx.coroutines.CancellationException
-import pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion
 import pe.edu.upeu.pharmamobile2.domain.model.*
 import pe.edu.upeu.pharmamobile2.domain.port.Reloj
 import pe.edu.upeu.pharmamobile2.domain.repository.*
+import pe.edu.upeu.pharmamobile2.domain.port.DisparadorSincronizacion
 
 class RevisarEnvioUseCase(private val cola: ColaProductoRepository, private val auth: AuthRepository,
     private val contexto: ContextoCuenta, private val reloj: Reloj, private val disparador: DisparadorSincronizacion) {

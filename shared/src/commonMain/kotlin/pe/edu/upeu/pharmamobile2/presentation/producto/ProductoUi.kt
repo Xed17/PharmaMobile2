@@ -3,13 +3,15 @@ package pe.edu.upeu.pharmamobile2.presentation.producto
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
 import pe.edu.upeu.pharmamobile2.platform.formatearSoles
 
+import pe.edu.upeu.pharmamobile2.domain.model.CategoriaPredeterminada
+
 data class ProductoUi(
     val id: Long,
     val nombre: String,
     val precio: String,
     val stock: Int,
     val activo: Boolean = true,
-    val categoriaId: Long = 26L,
+    val categoriaId: Long = CategoriaPredeterminada.ID,
     val categoriaNombre: String? = null,
     val precioNumerico: Double = 0.0,
     val esPendiente: Boolean = id < 0,

@@ -2,13 +2,15 @@ package pe.edu.upeu.pharmamobile2.presentation.producto
 
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
 
+import pe.edu.upeu.pharmamobile2.domain.model.CategoriaPredeterminada
+
 data class FormularioProducto(
     val id: Long? = null,
     val nombre: String = "",
     val precio: String = "",
     val stock: String = "",
-    val categoriaId: Long = 26L,
-    val categoriaNombre: String = "Analgésicos",
+    val categoriaId: Long = CategoriaPredeterminada.ID,
+    val categoriaNombre: String = CategoriaPredeterminada.NOMBRE,
     val nombreError: String? = null,
     val precioError: String? = null,
     val stockError: String? = null
@@ -55,5 +57,3 @@ data class ProductoUiState(
         }
     }
 }
-
-typealias FaseProductos = ProductoUiState.Fase

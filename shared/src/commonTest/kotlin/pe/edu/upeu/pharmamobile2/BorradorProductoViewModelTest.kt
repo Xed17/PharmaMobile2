@@ -68,8 +68,6 @@ class BorradorProductoViewModelTest {
             val vmB = ProductoViewModel(
                 observarProductos = ObservarProductosUseCase(fakeRepo),
                 sincronizarProductos = SincronizarProductosUseCase(fakeSync),
-                listarProductos = ListarProductosUseCase(fakeRepo),
-                obtenerProducto = ObtenerProductoUseCase(fakeRepo),
                 registrarProducto = RegistrarProductoUseCase(fakeRepo),
                 actualizarProducto = ActualizarProductoUseCase(fakeRepo),
                 eliminarProducto = EliminarProductoUseCase(fakeRepo),
@@ -81,8 +79,6 @@ class BorradorProductoViewModelTest {
             val vmA = ProductoViewModel(
                 observarProductos = ObservarProductosUseCase(fakeRepo),
                 sincronizarProductos = SincronizarProductosUseCase(fakeSync),
-                listarProductos = ListarProductosUseCase(fakeRepo),
-                obtenerProducto = ObtenerProductoUseCase(fakeRepo),
                 registrarProducto = RegistrarProductoUseCase(fakeRepo),
                 actualizarProducto = ActualizarProductoUseCase(fakeRepo),
                 eliminarProducto = EliminarProductoUseCase(fakeRepo),
@@ -116,8 +112,6 @@ class BorradorProductoViewModelTest {
             val productoVm = ProductoViewModel(
                 observarProductos = ObservarProductosUseCase(fakeRepo),
                 sincronizarProductos = SincronizarProductosUseCase(fakeSync),
-                listarProductos = ListarProductosUseCase(fakeRepo),
-                obtenerProducto = ObtenerProductoUseCase(fakeRepo),
                 registrarProducto = RegistrarProductoUseCase(fakeRepo),
                 actualizarProducto = ActualizarProductoUseCase(fakeRepo),
                 eliminarProducto = EliminarProductoUseCase(fakeRepo),

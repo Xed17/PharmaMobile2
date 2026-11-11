@@ -3,6 +3,8 @@ package pe.edu.upeu.pharmamobile2.data.local
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import kotlinx.serialization.json.Json
+import pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal
 
 class AlmacenSeguroAndroid(
     private val context: Context
@@ -22,11 +24,11 @@ class AlmacenSeguroAndroid(
         )
     }
 
-    override suspend fun guardarPerfil(perfil: pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal) {
-        check(sharedPreferences.edit().putString("perfil_validado", kotlinx.serialization.json.Json.encodeToString(pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal.serializer(), perfil)).commit())
+    override suspend fun guardarPerfil(perfil: PerfilLocal) {
+        check(sharedPreferences.edit().putString("perfil_validado", Json.encodeToString(PerfilLocal.serializer(), perfil)).commit())
     }
-    override suspend fun obtenerPerfil(): pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal? =
-        sharedPreferences.getString("perfil_validado", null)?.let { kotlinx.serialization.json.Json.decodeFromString(pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal.serializer(), it) }
+    override suspend fun obtenerPerfil(): PerfilLocal? =
+        sharedPreferences.getString("perfil_validado", null)?.let { Json.decodeFromString(PerfilLocal.serializer(), it) }
     override suspend fun borrarContinuidad() {
         check(sharedPreferences.edit().remove("perfil_validado").commit())
     }

@@ -66,7 +66,6 @@ class NotificadorAndroid(
 
         val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("cuenta_clave_aviso", contexto.clave)
         }
 
         val pendingIntent = if (launchIntent != null) {

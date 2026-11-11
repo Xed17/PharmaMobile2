@@ -2,6 +2,7 @@ package pe.edu.upeu.pharmamobile2.domain.usecase
 
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
 import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
+import kotlinx.coroutines.CancellationException
 
 class RegistrarProductoUseCase(
     private val repository: ProductoRepository
@@ -18,7 +19,7 @@ class RegistrarProductoUseCase(
         }
 
         Result.success(repository.registrar(producto))
-    } catch (cancelacion: kotlinx.coroutines.CancellationException) {
+    } catch (cancelacion: CancellationException) {
         throw cancelacion
     } catch (e: Exception) {
         Result.failure(e)

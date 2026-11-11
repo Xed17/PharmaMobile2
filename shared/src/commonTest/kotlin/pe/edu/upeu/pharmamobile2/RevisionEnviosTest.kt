@@ -1,11 +1,11 @@
 package pe.edu.upeu.pharmamobile2
 
 import kotlinx.coroutines.test.*
-import pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion
 import pe.edu.upeu.pharmamobile2.domain.model.*
 import pe.edu.upeu.pharmamobile2.domain.usecase.RevisarEnvioUseCase
 import pe.edu.upeu.pharmamobile2.testutil.*
 import kotlin.test.*
+import pe.edu.upeu.pharmamobile2.domain.port.DisparadorSincronizacion
 
 class RevisionEnviosTest {
     private suspend fun fallo(f: EscenarioSync, naturaleza: NaturalezaFallo, codigo: String = "HTTP_503"): Long {

@@ -1,13 +1,14 @@
 package pe.edu.upeu.pharmamobile2.domain.usecase
 
-import pe.edu.upeu.pharmamobile2.data.InMemoryRepository
+import pe.edu.upeu.pharmamobile2.domain.port.LimpiadorDatosSesion
 import pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository
 
 class CerrarSesionUseCase(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val limpiador: LimpiadorDatosSesion
 ) {
     suspend operator fun invoke() {
         authRepository.cerrarSesion()
-        InMemoryRepository.limpiarDatosDeSesion()
+        limpiador.limpiar()
     }
 }

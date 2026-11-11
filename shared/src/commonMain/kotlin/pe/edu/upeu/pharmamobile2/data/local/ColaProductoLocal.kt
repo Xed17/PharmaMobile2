@@ -30,21 +30,21 @@ class ColaProductoLocal(
     override suspend fun guardar(producto: Producto): RegistroEnvio = db.transactionWithResult {
         val id = q.siguienteIdLocal(cuenta).executeAsOneOrNull() ?: -1L
         q.insertar(cuenta,id,producto.nombre,producto.precio,producto.stock.toLong(),if(producto.activo) 1L else 0L,
-            producto.categoriaId,producto.categoriaNombre,1,"PENDIENTE",ids.nuevo())
+            producto.categoriaId,producto.categoriaNombre,1,EstadoEnvio.PENDIENTE.name,ids.nuevo())
         fila(id)!!.registro()
     }
     override suspend fun iniciar(id: Long, ahoraMs: Long): RegistroEnvio? = db.transactionWithResult {
         q.iniciarEnvio(cuenta,id,PoliticaReintento.MAX_INTENTOS.toLong(),ahoraMs)
-        if(q.cambios().executeAsOne() == 1L) fila(id)!!.also { historial(it,"ENVIANDO",null,null,ahoraMs) }.registro() else null
+        if(q.cambios().executeAsOne() == 1L) fila(id)!!.also { historial(it,EstadoEnvio.ENVIANDO.name,null,null,ahoraMs) }.registro() else null
     }
     override suspend fun resolver(id: Long, resultado: ResultadoEnvio, ahoraMs: Long) {
         db.transaction {
             val row = fila(id) ?: error("No existe el envío de esta cuenta")
-            require(row.estadoEnvio == "ENVIANDO")
+            require(row.estadoEnvio == EstadoEnvio.ENVIANDO.name)
             when(resultado) {
                 is ResultadoEnvio.Exito -> {
                     require(resultado.producto.id > 0)
-                    historial(row,"CONFIRMADO",null,null,ahoraMs)
+                    historial(row,EstadoEnvio.CONFIRMADO.name,null,null,ahoraMs)
                     ProductoLocal(db,contexto,dispatcher).confirmarRegistro(id,resultado.producto)
                 }
                 is ResultadoEnvio.Fallo -> {
@@ -65,8 +65,8 @@ class ColaProductoLocal(
     }
     override suspend fun recuperarInterrumpidos() {
         db.transaction {
-            q.envios(cuenta).executeAsList().filter { it.estadoEnvio == "ENVIANDO" }.forEach { row ->
-                val estado = if(row.intentos >= PoliticaReintento.MAX_INTENTOS) "FALLIDA_AGOTADA" else "REVISION"
+            q.envios(cuenta).executeAsList().filter { it.estadoEnvio == EstadoEnvio.ENVIANDO.name }.forEach { row ->
+                val estado = if(row.intentos >= PoliticaReintento.MAX_INTENTOS) EstadoEnvio.FALLIDA_AGOTADA.name else EstadoEnvio.REVISION.name
                 q.resolverError(estado,"INTERRUMPIDO","No se conoce el resultado del envío",null,null,cuenta,row.id)
                 historial(row,estado,"INTERRUMPIDO","No se conoce el resultado del envío",reloj.ahoraMs())
             }
@@ -75,8 +75,8 @@ class ColaProductoLocal(
     override suspend fun autorizarReenvio(id: Long, ahoraMs: Long, aceptaRiesgo: Boolean) {
         db.transaction {
             val row = fila(id) ?: error("Envío inexistente")
-            require(row.estadoEnvio in listOf("REVISION","REQUIERE_SESION","REQUIERE_PERMISO"))
-            require(row.estadoEnvio != "REVISION" || aceptaRiesgo) { "Reenviar puede duplicar el producto" }
+            require(row.estadoEnvio in listOf(EstadoEnvio.REVISION.name,EstadoEnvio.REQUIERE_SESION.name,EstadoEnvio.REQUIERE_PERMISO.name))
+            require(row.estadoEnvio != EstadoEnvio.REVISION.name || aceptaRiesgo) { "Reenviar puede duplicar el producto" }
             require(row.intentos < PoliticaReintento.MAX_INTENTOS)
             require(row.proximoIntentoEnMs?.let { ahoraMs >= it } != false)
             q.liberarEnvio(cuenta,id)
@@ -84,7 +84,7 @@ class ColaProductoLocal(
     }
     override suspend fun corregirRechazado(id: Long, producto: Producto) {
         db.transaction {
-            require(fila(id)?.estadoEnvio == "FALLIDA_PERMANENTE")
+            require(fila(id)?.estadoEnvio == EstadoEnvio.FALLIDA_PERMANENTE.name)
             q.corregirEnvio(producto.nombre,producto.precio,producto.stock.toLong(),if(producto.activo) 1L else 0L,
                 producto.categoriaId,producto.categoriaNombre,cuenta,id)
         }
@@ -92,7 +92,7 @@ class ColaProductoLocal(
     override suspend fun rehabilitarAgotado(id: Long, ahoraMs: Long, aceptaRiesgo: Boolean) {
         db.transaction {
             val row = fila(id) ?: error("Envío inexistente")
-            require(row.estadoEnvio == "FALLIDA_AGOTADA" && aceptaRiesgo)
+            require(row.estadoEnvio == EstadoEnvio.FALLIDA_AGOTADA.name && aceptaRiesgo)
             require(row.proximoIntentoEnMs?.let { ahoraMs >= it } != false)
             q.nuevaRevision(cuenta,id)
         }

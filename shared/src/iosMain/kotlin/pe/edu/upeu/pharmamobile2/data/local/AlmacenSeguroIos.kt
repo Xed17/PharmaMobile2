@@ -29,16 +29,18 @@ import platform.Security.kSecMatchLimit
 import platform.Security.kSecMatchLimitOne
 import platform.Security.kSecReturnData
 import platform.Security.kSecValueData
+import kotlinx.serialization.json.Json
+import pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal
 
 class AlmacenSeguroIos(private val account: String = "jwt_token") : AlmacenSeguro {
 
     private val service = "pe.edu.upeu.pharmamobile2"
     private val perfilStore by lazy { AlmacenSeguroIos("perfil_validado") }
-    override suspend fun guardarPerfil(perfil: pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal) {
-        perfilStore.guardarToken(kotlinx.serialization.json.Json.encodeToString(pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal.serializer(), perfil))
+    override suspend fun guardarPerfil(perfil: PerfilLocal) {
+        perfilStore.guardarToken(Json.encodeToString(PerfilLocal.serializer(), perfil))
     }
-    override suspend fun obtenerPerfil(): pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal? =
-        perfilStore.obtenerToken()?.let { kotlinx.serialization.json.Json.decodeFromString(pe.edu.upeu.pharmamobile2.domain.model.PerfilLocal.serializer(), it) }
+    override suspend fun obtenerPerfil(): PerfilLocal? =
+        perfilStore.obtenerToken()?.let { Json.decodeFromString(PerfilLocal.serializer(), it) }
     override suspend fun borrarContinuidad() { perfilStore.eliminarToken() }
 
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)

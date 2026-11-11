@@ -8,7 +8,7 @@ import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRemotoRepository
 
 class ProductoRemotoRest(private val api: ProductoApi, private val autorizador: AutorizadorSolicitudes, private val contexto: ContextoCuenta) : ProductoRemotoRepository {
     override suspend fun crear(producto: Producto): ResultadoEnvio = ejecutarLlamada {
-        autorizador.conCredencial(contexto) { token -> api.crear(producto.toRequest(26L),token).toDomain() }
+        autorizador.conCredencial(contexto) { token -> api.crear(producto.toRequest(CategoriaPredeterminada.ID),token).toDomain() }
     }.fold({ ResultadoEnvio.Exito(it) }, { ResultadoEnvio.Fallo(traducir(it,true)) })
     override suspend fun listarCompleto(): Result<List<Producto>> = ejecutarLlamada {
         autorizador.conCredencial(contexto) { token -> api.obtenerProductos(token).map { it.toDomain() } }
