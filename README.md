@@ -639,3 +639,37 @@ Resumen de Pruebas Unitarias del Proyecto (`shared/build/reports/tests/testAndro
 8. `882e3d1` — `docs: documentar persistencia offline y evidencias de validacion`
 
 
+
+---
+
+# Sesión 14 · Firma y builds de entrega (Android)
+
+## Firma sin exponer contraseñas
+
+La firma de release lee sus credenciales de `keystore.properties` (raíz del proyecto), que **no se versiona**
+(`.gitignore` excluye `keystore.properties`, `*.jks` y `*.keystore`).
+
+1. Copia `keystore.properties.example` como `keystore.properties`.
+2. Completa `storeFile` (ruta absoluta al `.jks`), `storePassword`, `keyAlias` y `keyPassword`.
+3. Las contraseñas **no** se documentan en ningún archivo del repositorio.
+
+Si el archivo no existe, el proyecto abre y compila en debug para cualquiera; solo `release` queda sin firmar.
+
+## Generar los artefactos
+
+```bash
+./gradlew :androidApp:bundleRelease     # .aab firmado (entregable)
+./gradlew :androidApp:assembleRelease   # .apk de revisión (para instalar y probar)
+apksigner verify --print-certs androidApp/build/outputs/apk/release/androidApp-release.apk
+```
+
+## Versión de esta entrega
+
+| Dato | Valor |
+|---|---|
+| `applicationId` | `pe.edu.upeu.pharmamobile2` |
+| `versionCode` | `1` |
+| `versionName` | `1.0.0` |
+| Etiqueta de Git | `v1.0-final` |
+
+Detalle de pasos, pruebas y defectos: carpeta [`docs/sesion14/`](docs/sesion14/).
