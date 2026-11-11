@@ -10,7 +10,7 @@
 | Release minificado en emulador Pixel_7 (API 34), firmado con clave de depuración solo para esta prueba | **Se cerraba al abrir** (defecto D-01), corregido |
 | Tras la corrección: abre y muestra el login | OK (`evidencias/E01-release-minificado-login.png`) |
 | Tras la corrección: login con backend apagado | Error controlado, sin crash (`evidencias/E02-release-minificado-error-red.png`) |
-| Serialización contra respuestas reales del backend | **[[Pendiente: probar con PharmaSoft encendido]]** |
+| Serialización contra respuestas reales del backend (release firmado, emulador, PharmaSoft en Docker) | OK: login, perfil `@admin`, sincronización y catálogo "Todos (15)" (`evidencias/E03` y `E04`) |
 
 ## Defecto D-01 — el release minificado se cierra al abrir
 

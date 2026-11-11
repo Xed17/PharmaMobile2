@@ -31,3 +31,7 @@ evidencias/
 keystore.properties
 *.jks
 *.keystore
+
+# Evidencias versionadas de la sesion 14 (la regla evidencias/ de arriba las ignoraria)
+!docs/sesion14/evidencias/
+!docs/sesion14/evidencias/*.png
