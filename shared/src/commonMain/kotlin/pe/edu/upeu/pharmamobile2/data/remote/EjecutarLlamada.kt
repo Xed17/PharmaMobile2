@@ -8,6 +8,11 @@ import kotlinx.coroutines.CancellationException
 import pe.edu.upeu.pharmamobile2.data.remote.dto.ErrorResponseDto
 import pe.edu.upeu.pharmamobile2.domain.error.ErrorApi
 import pe.edu.upeu.pharmamobile2.domain.error.ErrorApiException
+import io.ktor.client.call.NoTransformationFoundException
+import io.ktor.serialization.ContentConvertException
+import io.ktor.utils.io.errors.IOException
+import kotlinx.serialization.SerializationException
+import pe.edu.upeu.pharmamobile2.domain.model.FalloOperacionException
 
 suspend fun <T> ejecutarLlamada(
     bloque: suspend () -> T
@@ -28,15 +33,15 @@ suspend fun <T> ejecutarLlamada(
         Result.failure(
             ErrorApiException(ErrorApi.TiempoAgotado)
         )
-    } catch (e: pe.edu.upeu.pharmamobile2.domain.model.FalloOperacionException) {
+    } catch (e: FalloOperacionException) {
         Result.failure(e)
-    } catch (e: io.ktor.serialization.ContentConvertException) {
+    } catch (e: ContentConvertException) {
         Result.failure(ErrorApiException(ErrorApi.DatosInvalidos))
-    } catch (e: kotlinx.serialization.SerializationException) {
+    } catch (e: SerializationException) {
         Result.failure(ErrorApiException(ErrorApi.DatosInvalidos))
-    } catch (e: io.ktor.client.call.NoTransformationFoundException) {
+    } catch (e: NoTransformationFoundException) {
         Result.failure(ErrorApiException(ErrorApi.DatosInvalidos))
-    } catch (e: io.ktor.utils.io.errors.IOException) {
+    } catch (e: IOException) {
         Result.failure(ErrorApiException(ErrorApi.SinConexion))
     } catch (e: Exception) {
         Result.failure(ErrorApiException(ErrorApi.Inesperado))

@@ -362,7 +362,7 @@ fun ProductoScreen(
                 fontWeight = FontWeight.SemiBold
             )
             TextButton(
-                onClick = { viewModel.cargarProductos() },
+                onClick = { viewModel.sincronizar() },
                 enabled = !estaOperando
             ) {
                 Text("Recargar")
@@ -407,7 +407,7 @@ fun ProductoScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Button(onClick = { viewModel.cargarProductos() }) {
+                        Button(onClick = { viewModel.sincronizar() }) {
                             Text("Reintentar consulta")
                         }
                     }
@@ -430,7 +430,7 @@ fun ProductoScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error
                         )
-                        Button(onClick = { viewModel.cargarProductos() }) {
+                        Button(onClick = { viewModel.sincronizar() }) {
                             Text("Reintentar")
                         }
                     }

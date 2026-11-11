@@ -13,8 +13,6 @@ import pe.edu.upeu.pharmamobile2.domain.model.Producto
 import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobile2.domain.usecase.ActualizarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.EliminarProductoUseCase
-import pe.edu.upeu.pharmamobile2.domain.usecase.ListarProductosUseCase
-import pe.edu.upeu.pharmamobile2.domain.usecase.ObtenerProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoUiState
 import pe.edu.upeu.pharmamobile2.presentation.producto.ProductoViewModel
@@ -100,8 +98,6 @@ class ProductoViewModelTest {
         return ProductoViewModel(
             observarProductos = pe.edu.upeu.pharmamobile2.domain.usecase.ObservarProductosUseCase(repo),
             sincronizarProductos = pe.edu.upeu.pharmamobile2.domain.usecase.SincronizarProductosUseCase(pe.edu.upeu.pharmamobile2.testutil.SincronizadorPrueba { repo.sincronizar() }),
-            listarProductos = ListarProductosUseCase(repo),
-            obtenerProducto = ObtenerProductoUseCase(repo),
             registrarProducto = RegistrarProductoUseCase(repo),
             actualizarProducto = ActualizarProductoUseCase(repo),
             eliminarProducto = EliminarProductoUseCase(repo)

@@ -3,11 +3,6 @@ package pe.edu.upeu.pharmamobile2.data.remote
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.authProviders
-import io.ktor.client.plugins.auth.providers.BearerAuthProvider
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.DEFAULT
@@ -17,7 +12,6 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
-import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguro
@@ -25,7 +19,7 @@ import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguro
 fun createHttpClient(
     engine: HttpClientEngine,
     almacenSeguro: AlmacenSeguro,
-    baseUrl: String = "http://10.0.2.2:8080/"
+    baseUrl: String = ApiConfig.URL_EMULADOR_ANDROID
 ): HttpClient =
     HttpClient(engine) {
         expectSuccess = true
@@ -59,11 +53,3 @@ fun createHttpClient(
             contentType(ContentType.Application.Json)
         }
     }
-
-fun HttpClient.limpiarTokensAuth() {
-    runCatching {
-        authProviders
-            .filterIsInstance<BearerAuthProvider>()
-            .forEach { it.clearToken() }
-    }
-}

@@ -12,27 +12,23 @@ import pe.edu.upeu.pharmamobile2.domain.error.ErrorApiException
 import pe.edu.upeu.pharmamobile2.domain.model.BorradorProducto
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
 import pe.edu.upeu.pharmamobile2.domain.repository.BorradorProductoRepository
-import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobile2.domain.usecase.ActualizarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.EliminarProductoUseCase
-import pe.edu.upeu.pharmamobile2.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ObservarProductosUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.ObservarUltimaSincronizacionUseCase
-import pe.edu.upeu.pharmamobile2.domain.usecase.ObtenerProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobile2.domain.usecase.SincronizarProductosUseCase
 import pe.edu.upeu.pharmamobile2.platform.formatearAntiguedad
 
+import pe.edu.upeu.pharmamobile2.domain.model.CategoriaPredeterminada
+
 class ProductoViewModel(
     private val observarProductos: ObservarProductosUseCase,
     private val sincronizarProductos: SincronizarProductosUseCase,
-    private val listarProductos: ListarProductosUseCase,
-    private val obtenerProducto: ObtenerProductoUseCase,
     private val registrarProducto: RegistrarProductoUseCase,
     private val actualizarProducto: ActualizarProductoUseCase,
     private val eliminarProducto: EliminarProductoUseCase,
     private val observarUltimaSincronizacion: ObservarUltimaSincronizacionUseCase? = null,
-    private val productoRepository: ProductoRepository? = null,
     private val borradorRepository: BorradorProductoRepository? = null
 ) : ViewModel() {
 
@@ -88,8 +84,8 @@ class ProductoViewModel(
                                     nombre = borrador.nombre,
                                     precio = borrador.precioTexto,
                                     stock = borrador.stockTexto,
-                                    categoriaId = borrador.categoriaId ?: 26L,
-                                    categoriaNombre = borrador.categoriaNombre ?: "Analgésicos"
+                                    categoriaId = borrador.categoriaId ?: CategoriaPredeterminada.ID,
+                                    categoriaNombre = borrador.categoriaNombre ?: CategoriaPredeterminada.NOMBRE
                                 )
                             )
                         } else state
@@ -140,10 +136,6 @@ class ProductoViewModel(
                 }
             }
         }
-    }
-
-    fun cargarProductos() {
-        sincronizar()
     }
 
     fun actualizarNombre(valor: String) {

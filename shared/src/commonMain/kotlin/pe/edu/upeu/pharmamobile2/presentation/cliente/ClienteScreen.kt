@@ -25,6 +25,12 @@ import androidx.compose.ui.unit.dp
 import pe.edu.upeu.pharmamobile2.data.InMemoryRepository
 import pe.edu.upeu.pharmamobile2.domain.model.Cliente
 import pe.edu.upeu.pharmamobile2.presentation.components.ValidatedTextField
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedButton
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.ClientRequestException
+import pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository
 
 @Composable
 fun ClientesScreen() {
@@ -141,7 +147,7 @@ fun ClientesScreen() {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        androidx.compose.material3.HorizontalDivider()
+        HorizontalDivider()
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
@@ -154,14 +160,14 @@ fun ClientesScreen() {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        val client: io.ktor.client.HttpClient = org.koin.compose.koinInject()
-        val authRepo: pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository = org.koin.compose.koinInject()
+        val client: HttpClient = org.koin.compose.koinInject()
+        val authRepo: AuthRepository = org.koin.compose.koinInject()
         val scope = androidx.compose.runtime.rememberCoroutineScope()
         var consultandoServidor by remember { mutableStateOf(false) }
         var mensajeServidor by remember { mutableStateOf("") }
         var esErrorServidor by remember { mutableStateOf(false) }
 
-        androidx.compose.material3.OutlinedButton(
+        OutlinedButton(
             onClick = {
                 scope.launch {
                     consultandoServidor = true
@@ -169,7 +175,7 @@ fun ClientesScreen() {
                         val respuesta = client.get("api/v1/clientes")
                         mensajeServidor = "Servidor respondió: HTTP ${respuesta.status.value} OK. Acceso concedido."
                         esErrorServidor = false
-                    } catch (e: io.ktor.client.plugins.ClientRequestException) {
+                    } catch (e: ClientRequestException) {
                         if (e.response.status.value == 403) {
                             authRepo.notificar403("No tienes permiso para consultar clientes (403)")
                             mensajeServidor = "HTTP 403 Forbidden: Sin permisos para consultar clientes."
@@ -194,7 +200,7 @@ fun ClientesScreen() {
             enabled = !consultandoServidor
         ) {
             if (consultandoServidor) {
-                androidx.compose.material3.CircularProgressIndicator(
+                CircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
                     strokeWidth = 2.dp
                 )

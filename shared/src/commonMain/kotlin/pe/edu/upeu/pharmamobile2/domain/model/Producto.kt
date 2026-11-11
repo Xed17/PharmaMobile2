@@ -8,8 +8,8 @@ data class Producto(
     val precio: Double,
     val stock: Int,
     val activo: Boolean = true,
-    val categoriaId: Long = 26L,
-    val categoriaNombre: String? = "Analgésicos"
+    val categoriaId: Long = CategoriaPredeterminada.ID,
+    val categoriaNombre: String? = CategoriaPredeterminada.NOMBRE
 ) {
     // Constructor de conveniencia para compatibilidad con Int literals (ej: id = 1)
     constructor(
@@ -18,8 +18,8 @@ data class Producto(
         precio: Double,
         stock: Int,
         activo: Boolean = true,
-        categoriaId: Long = 26L,
-        categoriaNombre: String? = "Analgésicos"
+        categoriaId: Long = CategoriaPredeterminada.ID,
+        categoriaNombre: String? = CategoriaPredeterminada.NOMBRE
     ) : this(
         id = id.toLong(),
         nombre = nombre,

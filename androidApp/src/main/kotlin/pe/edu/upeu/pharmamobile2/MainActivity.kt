@@ -9,9 +9,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import org.koin.android.ext.android.inject
 import pe.edu.upeu.pharmamobile2.data.permiso.PuentePermisosHolder
 import pe.edu.upeu.pharmamobile2.permiso.PuentePermisosActivity
+import pe.edu.upeu.pharmamobile2.domain.port.MonitorConectividad
 
 class MainActivity : ComponentActivity() {
-    private val monitor by inject<pe.edu.upeu.pharmamobile2.domain.port.MonitorConectividad>()
+    private val monitor by inject<MonitorConectividad>()
     private lateinit var puentePermisos: PuentePermisosActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -2,8 +2,8 @@ package pe.edu.upeu.pharmamobile2
 
 import kotlinx.serialization.json.Json
 import pe.edu.upeu.pharmamobile2.data.mapper.toDomain
-import pe.edu.upeu.pharmamobile2.data.remote.dto.PaginaProductosDto
-import pe.edu.upeu.pharmamobile2.data.remote.dto.ProductoDto
+import pe.edu.upeu.pharmamobile2.data.remote.dto.PaginaResponseDto
+import pe.edu.upeu.pharmamobile2.data.remote.dto.ProductoResponseDto
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -43,7 +43,7 @@ class ProductoRemoteTest {
         }
         """.trimIndent()
 
-        val pagina = json.decodeFromString<PaginaProductosDto>(jsonString)
+        val pagina = json.decodeFromString<PaginaResponseDto<ProductoResponseDto>>(jsonString)
         assertEquals(1, pagina.contenido.size)
         assertEquals(0, pagina.pagina)
         assertTrue(pagina.ultima)
@@ -67,7 +67,7 @@ class ProductoRemoteTest {
 
     @Test
     fun testMapperProductoSinStock() {
-        val dto = ProductoDto(
+        val dto = ProductoResponseDto(
             id = 2,
             nombre = "Ibuprofeno 400mg",
             precio = 5.0,

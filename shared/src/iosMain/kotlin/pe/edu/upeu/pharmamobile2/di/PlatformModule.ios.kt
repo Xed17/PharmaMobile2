@@ -11,14 +11,23 @@ import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriver
 import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriverIos
 import pe.edu.upeu.pharmamobile2.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobile2.platform.CompartidorIos
+import pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaIos
+import pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaSegura
+import pe.edu.upeu.pharmamobile2.data.notificacion.NotificadorIos
+import pe.edu.upeu.pharmamobile2.data.permiso.GestorPermisosIos
+import pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos
+import pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion
+import pe.edu.upeu.pharmamobile2.domain.port.Telemetria
+
+import pe.edu.upeu.pharmamobile2.data.remote.ApiConfig
 
 actual val platformModule: Module = module {
     single<HttpClientEngine> { Darwin.create() }
-    single(named("baseUrl")) { "http://localhost:8080/" }
+    single(named("baseUrl")) { ApiConfig.URL_SIMULADOR_IOS }
     single<Compartidor> { CompartidorIos() }
     single<AlmacenSeguro> { AlmacenSeguroIos() }
     single<CreadorDeDriver> { CreadorDeDriverIos() }
-    single<pe.edu.upeu.pharmamobile2.domain.port.GestorPermisos> { pe.edu.upeu.pharmamobile2.data.permiso.GestorPermisosIos() }
-    single<pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion> { pe.edu.upeu.pharmamobile2.data.notificacion.NotificadorIos() }
-    single<pe.edu.upeu.pharmamobile2.domain.port.Telemetria> { pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaSegura(pe.edu.upeu.pharmamobile2.data.firebase.TelemetriaIos()) }
+    single<GestorPermisos> { GestorPermisosIos() }
+    single<NotificadorSincronizacion> { NotificadorIos() }
+    single<Telemetria> { TelemetriaSegura(TelemetriaIos()) }
 }

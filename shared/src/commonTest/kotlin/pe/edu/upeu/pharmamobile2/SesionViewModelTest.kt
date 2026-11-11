@@ -31,6 +31,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import pe.edu.upeu.pharmamobile2.domain.port.LimpiadorDatosSesion
 
 class FakeAuthRepository(
     var sesionRetornada: Sesion? = null,
@@ -105,7 +106,7 @@ class SesionViewModelTest {
             authRepository = fakeRepo,
             iniciarSesionUseCase = IniciarSesionUseCase(fakeRepo),
             recuperarSesionUseCase = RecuperarSesionUseCase(fakeRepo),
-            cerrarSesionUseCase = CerrarSesionUseCase(fakeRepo)
+            cerrarSesionUseCase = CerrarSesionUseCase(fakeRepo, LimpiadorDatosSesion {})
         )
     }
 

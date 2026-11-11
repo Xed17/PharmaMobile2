@@ -16,6 +16,7 @@ import pe.edu.upeu.pharmamobile2.domain.model.*
 import pe.edu.upeu.pharmamobile2.domain.usecase.CerrarSesionUseCase
 import pe.edu.upeu.pharmamobile2.testutil.*
 import kotlin.test.*
+import pe.edu.upeu.pharmamobile2.data.LimpiadorDatosDemo
 
 class AislamientoCuentaTest {
 
@@ -137,7 +138,7 @@ class AislamientoCuentaTest {
             override fun notificar401() {}
             override fun notificar403(mensaje: String) {}
         }
-        val cerrarSesionUseCase = CerrarSesionUseCase(fakeAuth)
+        val cerrarSesionUseCase = CerrarSesionUseCase(fakeAuth, LimpiadorDatosDemo())
 
         InMemoryRepository.agregarCliente(Cliente(999L, "Cliente privado A", "a@test.com", "999888777"))
         assertTrue(InMemoryRepository.clientes.any { it.nombre == "Cliente privado A" })

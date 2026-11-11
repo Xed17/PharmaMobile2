@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobile2.data.sync
+package pe.edu.upeu.pharmamobile2.domain.port
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow

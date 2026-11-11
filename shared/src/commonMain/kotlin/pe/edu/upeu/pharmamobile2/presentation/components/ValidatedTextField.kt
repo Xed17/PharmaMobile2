@@ -29,7 +29,7 @@ fun ValidatedTextField(
         supportingText = if (mostrarTextoError) {
             {
                 Text(
-                    text = error!!,
+                    text = error,
                     color = MaterialTheme.colorScheme.error
                 )
             }

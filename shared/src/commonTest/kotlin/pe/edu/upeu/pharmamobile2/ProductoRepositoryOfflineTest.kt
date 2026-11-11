@@ -28,6 +28,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import pe.edu.upeu.pharmamobile2.domain.port.DisparadorSincronizacion
 
 class ProductoRepositoryOfflineTest {
 
@@ -106,7 +107,7 @@ class ProductoRepositoryOfflineTest {
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.currentCoroutineContext()),
             pe.edu.upeu.pharmamobile2.domain.usecase.EnviarPendientesUseCase(cola,remoto,auth,local.contexto,reloj),
             pe.edu.upeu.pharmamobile2.domain.usecase.DescargarCatalogoUseCase(descarga,remoto,auth,local.contexto,reloj,pe.edu.upeu.pharmamobile2.testutil.EsperaFalsa(),pe.edu.upeu.pharmamobile2.testutil.GeneradorIdsSecuencial()),
-            cola,descarga,auth,local.contexto,pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion(),pe.edu.upeu.pharmamobile2.testutil.MonitorFalso())
+            cola,descarga,auth,local.contexto,DisparadorSincronizacion(),pe.edu.upeu.pharmamobile2.testutil.MonitorFalso())
         try { c.sincronizar(pe.edu.upeu.pharmamobile2.domain.model.MotivoSync.MANUAL) } finally { c.detener();fixture.cerrar() }
     }
 

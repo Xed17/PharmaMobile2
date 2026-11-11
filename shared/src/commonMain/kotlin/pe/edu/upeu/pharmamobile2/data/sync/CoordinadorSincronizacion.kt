@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import pe.edu.upeu.pharmamobile2.data.notificacion.PoliticaAvisos
 import pe.edu.upeu.pharmamobile2.domain.model.*
 import pe.edu.upeu.pharmamobile2.domain.port.*
 import pe.edu.upeu.pharmamobile2.domain.repository.*
@@ -19,6 +20,7 @@ class CoordinadorSincronizacion(private val scope: CoroutineScope,private val en
     private val escuchas=mutableListOf<Job>()
     private var iniciado=false
     private var detenido=false
+    private var ultimoAviso: ResumenSincronizacion?=null
     private val _actividad=MutableStateFlow(false)
     override val actividad=_actividad.asStateFlow()
     private val _resultados=MutableSharedFlow<ResumenSincronizacion>(extraBufferCapacity=16)
@@ -71,7 +73,7 @@ class CoordinadorSincronizacion(private val scope: CoroutineScope,private val en
                 val resultado=ciclo(motivo)
                 enviadas+=resultado.enviadas
                 _resultados.emit(resultado)
-                try { notificador?.publicar(contexto, resultado) } catch (_: Throwable) {}
+                avisar(resultado)
                 val siguiente=puerta.withLock {
                     val siguiente=pendiente;pendiente=null
                     if(siguiente==null && activo===ejecutando) { activo=null;_actividad.value=false }
@@ -87,6 +89,13 @@ class CoordinadorSincronizacion(private val scope: CoroutineScope,private val en
                 }
             }
         }
+    }
+    /** Solo avisa si hubo novedades; `enviadas` es por ciclo, por eso no se compara con el aviso anterior. */
+    private suspend fun avisar(resultado: ResumenSincronizacion) {
+        val previo=ultimoAviso?.copy(enviadas=0)
+        ultimoAviso=resultado
+        if(!PoliticaAvisos.debeNotificar(previo,resultado,habilitada=true)) return
+        try { notificador?.publicar(contexto,resultado) } catch (e: Exception) { if(e is CancellationException) throw e }
     }
     private suspend fun vigente() {
         currentCoroutineContext().ensureActive()
@@ -126,6 +135,6 @@ class CoordinadorSincronizacion(private val scope: CoroutineScope,private val en
         cancelarCiclo()
         escuchas.joinAll();escuchas.clear()
         disparador.cerrar()
-        try { notificador?.cancelar(contexto) } catch (_: Throwable) {}
+        try { notificador?.cancelar(contexto) } catch (e: Exception) { if(e is CancellationException) throw e }
     }
 }

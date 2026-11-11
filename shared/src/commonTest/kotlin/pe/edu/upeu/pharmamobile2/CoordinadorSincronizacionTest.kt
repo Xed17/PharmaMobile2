@@ -13,10 +13,15 @@ import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CoordinadorSincronizacionTest {
-    private fun crear(f: EscenarioSync,scope: CoroutineScope,monitor: MonitorFalso=MonitorFalso()): CoordinadorSincronizacion {
+    private class NotificadorGrabador : NotificadorSincronizacion {
+        val publicados=mutableListOf<ResumenSincronizacion>()
+        override suspend fun publicar(contexto: ContextoCuenta,resumen: ResumenSincronizacion) { publicados+=resumen }
+        override suspend fun cancelar(contexto: ContextoCuenta) {}
+    }
+    private fun crear(f: EscenarioSync,scope: CoroutineScope,monitor: MonitorFalso=MonitorFalso(),notificador: NotificadorSincronizacion?=null): CoordinadorSincronizacion {
         val descarga=DescargaLocal(f.db,f.contexto)
         val descargar=DescargarCatalogoUseCase(descarga,f.remoto,f.auth,f.contexto,f.reloj,EsperaFalsa(),GeneradorIdsSecuencial())
-        return CoordinadorSincronizacion(scope,f.enviar,descargar,f.cola,descarga,f.auth,f.contexto,DisparadorSincronizacion(),monitor)
+        return CoordinadorSincronizacion(scope,f.enviar,descargar,f.cola,descarga,f.auth,f.contexto,DisparadorSincronizacion(),monitor,notificador)
     }
     @Test fun subeAntesDeDescargarYResumeSoloSuCuenta() = runTest {
         val f=EscenarioSync.crear(StandardTestDispatcher(testScheduler));val c=crear(f,backgroundScope)
@@ -30,6 +35,20 @@ class CoordinadorSincronizacionTest {
             assertEquals(1,resumen.enviadas);assertEquals(0,resumen.pendientes)
             assertTrue(resumen.descargaCompleta)
             assertFalse(c.actividad.value)
+        } finally { c.detener();f.cerrar() }
+    }
+    @Test fun soloNotificaCuandoHayNovedades() = runTest {
+        val f=EscenarioSync.crear(StandardTestDispatcher(testScheduler));val grabador=NotificadorGrabador();val c=crear(f,backgroundScope,notificador=grabador)
+        try {
+            f.remoto.descarga={ Result.success(emptyList()) }
+            c.sincronizar(MotivoSync.MANUAL);c.sincronizar(MotivoSync.MANUAL)
+            assertEquals(0,grabador.publicados.size)
+            f.cola.guardar(Producto(nombre="Prueba",precio=2.0,stock=1))
+            f.remoto.respuesta={ ResultadoEnvio.Exito(it.copy(id=45L)) }
+            c.sincronizar(MotivoSync.MANUAL)
+            assertEquals(1,grabador.publicados.size)
+            c.sincronizar(MotivoSync.MANUAL)
+            assertEquals(1,grabador.publicados.size)
         } finally { c.detener();f.cerrar() }
     }
     @Test fun sinConexionNoConsumeIntentosDeEnvioNiDescarga() = runTest {

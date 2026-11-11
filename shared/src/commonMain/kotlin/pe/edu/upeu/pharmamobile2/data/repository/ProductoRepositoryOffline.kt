@@ -14,13 +14,17 @@ import pe.edu.upeu.pharmamobile2.domain.error.ErrorApiException
 import pe.edu.upeu.pharmamobile2.domain.model.Producto
 import pe.edu.upeu.pharmamobile2.domain.repository.AuthRepository
 import pe.edu.upeu.pharmamobile2.domain.repository.ProductoRepository
+import pe.edu.upeu.pharmamobile2.domain.model.MotivoSync
+
+import pe.edu.upeu.pharmamobile2.domain.model.CategoriaPredeterminada
+import pe.edu.upeu.pharmamobile2.domain.port.DisparadorSincronizacion
 
 class ProductoRepositoryOffline(
     private val local: ProductoLocal,
     private val api: ProductoApi,
-    private val categoriaPorDefecto: Long = 26L,
+    private val categoriaPorDefecto: Long = CategoriaPredeterminada.ID,
     private val authRepository: AuthRepository? = null,
-    private val disparador: pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion = pe.edu.upeu.pharmamobile2.data.sync.DisparadorSincronizacion()
+    private val disparador: DisparadorSincronizacion = DisparadorSincronizacion()
 ) : ProductoRepository {
 
 
@@ -40,11 +44,6 @@ class ProductoRepositoryOffline(
     override fun observar(): Flow<List<Producto>> = local.observar()
 
     override fun observarUltimaSincronizacion(): Flow<Long?> = local.observarUltimaSincronizacion()
-
-    override suspend fun simularUltimaSincronizacionAntigua() {
-        val hace26Horas = pe.edu.upeu.pharmamobile2.platform.obtenerTiempoActualMs() - (26L * 3600_000L)
-        local.guardarUltimaSincronizacion(hace26Horas)
-    }
 
     override suspend fun listar(): List<Producto> {
         return local.observar().first()
@@ -70,7 +69,7 @@ class ProductoRepositoryOffline(
     override suspend fun registrar(producto: Producto): Producto {
         exigirEscritura()
         val guardado = local.guardarPendiente(producto)
-        disparador.solicitar(pe.edu.upeu.pharmamobile2.domain.model.MotivoSync.GUARDADO)
+        disparador.solicitar(MotivoSync.GUARDADO)
         return guardado
     }
 
