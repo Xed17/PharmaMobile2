@@ -5,6 +5,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.binds
 import org.koin.dsl.module
 import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobile2.data.local.CreadorDeDriver
@@ -76,13 +77,15 @@ val dataModule = module {
             baseUrl = baseUrl
         )
     }
-    single<AuthRepository> {
+    // Una sola instancia expuesta con sus dos contratos. Registrarlas por separado con un cast
+    // (`get<AuthRepository>() as GuardiaCuenta`) se rompe en release: R8 fusiona las interfaces en
+    // AuthRepositorioRest, Koin las ve como la misma clave y la resolucion entra en recursion infinita.
+    single {
         AuthRepositorioRest(
             client = get(),
             almacenSeguro = get()
         )
-    }
-    single<GuardiaCuenta> { get<AuthRepository>() as GuardiaCuenta }
+    } binds arrayOf(AuthRepository::class, GuardiaCuenta::class)
     scope(named("cuenta")) {
     scoped { CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate) }
     scoped { ProductoLocal(get(), get()) }
