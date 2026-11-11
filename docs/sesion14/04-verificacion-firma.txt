@@ -1,0 +1,28 @@
+# Verificacion de firma - generado el 2026-11-11 15:19
+# Commit compilado: 742c7d0 (rama feature/builds-14)
+
+## apksigner verify --print-certs (APK de revision)
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Eduard Chambilla, OU=Facultad de Ingenieria y Arquitectura, O=Universidad Peruana Union, C=PE
+Signer #1 certificate SHA-256 digest: eaa2c823700945b779072fe2b3198ed9711086dca8cab8215aab69f0ef12c1da
+Signer #1 certificate SHA-1 digest: bf7e784ecbb3725f6b053ca1b19a46fba16a3ce8
+Signer #1 certificate MD5 digest: 9a1b6410e2baae9b10fee169f9f4c72d
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 7d3f580b9452a69342be18014e70613ac7d6e3326d5956a2ebe4dc314cc8739b
+Signer #1 public key SHA-1 digest: 7ea8c3483b5e53582c93f5d0565f082635d42883
+Signer #1 public key MD5 digest: 2403cb97e2c3c0f843bc807658dc131f
+
+## jarsigner -verify (AAB)
+jar verified.
+
+## SHA-256 de los archivos
+335d89838be391401c14f610fb3e109bb11bf78a6fddf8937757eb09d706e2ea *apk/release/androidApp-release.apk
+b8883353942ebfdb1e6e923679a917d505410f474bd11513b9721f38e425cf93 *bundle/release/androidApp-release.aab
