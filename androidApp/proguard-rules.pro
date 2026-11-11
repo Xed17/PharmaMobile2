@@ -1,21 +1,25 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Reglas de R8 para el build de entrega de PharmaMobil.
+# La reduccion elimina/renombra clases que solo se resuelven en tiempo de ejecucion
+# (serializacion e inyeccion). Estas reglas conservan lo minimo necesario.
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# --- Trazas legibles en Crashlytics -------------------------------------------------
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# --- Metadatos que necesitan la serializacion y los genericos -----------------------
+-keepattributes *Annotation*,InnerClasses,Signature,EnclosingMethod
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# --- kotlinx.serialization ----------------------------------------------------------
+# Los DTO y PerfilLocal se (de)serializan con el serializador generado por el plugin.
+-keepclassmembers class pe.edu.upeu.pharmamobile2.** {
+    *** Companion;
+}
+-keepclasseswithmembers class pe.edu.upeu.pharmamobile2.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+-keep,includedescriptorclasses class pe.edu.upeu.pharmamobile2.**$$serializer { *; }
+
+# --- Ktor: el logger por defecto referencia SLF4J, que no existe en Android ---------
+-dontwarn org.slf4j.**
+-dontwarn io.ktor.util.debug.**
+-dontwarn java.lang.management.**

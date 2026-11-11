@@ -639,3 +639,52 @@ Resumen de Pruebas Unitarias del Proyecto (`shared/build/reports/tests/testAndro
 8. `882e3d1` — `docs: documentar persistencia offline y evidencias de validacion`
 
 
+
+---
+
+# Sesión 14 · Firma y builds de entrega (Android)
+
+## Firma sin exponer contraseñas
+
+La firma de release lee sus credenciales de `keystore.properties` (raíz del proyecto), que **no se versiona**
+(`.gitignore` excluye `keystore.properties`, `*.jks` y `*.keystore`).
+
+1. Copia `keystore.properties.example` como `keystore.properties`.
+2. Completa `storeFile` (ruta absoluta al `.jks`), `storePassword`, `keyAlias` y `keyPassword`.
+3. Las contraseñas **no** se documentan en ningún archivo del repositorio.
+
+Si el archivo no existe, el proyecto abre y compila en debug para cualquiera; solo `release` queda sin firmar.
+
+## Generar los artefactos
+
+```bash
+./gradlew :androidApp:bundleRelease     # .aab firmado (entregable)
+./gradlew :androidApp:assembleRelease   # .apk de revisión (para instalar y probar)
+apksigner verify --print-certs androidApp/build/outputs/apk/release/androidApp-release.apk
+```
+
+## Versión de esta entrega
+
+| Dato | Valor |
+|---|---|
+| `applicationId` | `pe.edu.upeu.pharmamobile2` |
+| `versionCode` | `1` |
+| `versionName` | `1.0.0` |
+| Etiqueta de Git | `v1.0-final` |
+
+## URL del backend en teléfonos reales
+
+El emulador alcanza el equipo de desarrollo en `10.0.2.2`, pero un teléfono físico necesita la **IP de la máquina en la red local**.
+Se configura en `local.properties` (raíz, ignorado por Git):
+
+```properties
+api.baseUrl=http://192.168.1.40:8080/
+```
+
+- Si no se define, se usa `http://10.0.2.2:8080/` (solo emulador).
+- Gradle genera `network_security_config.xml` a partir de esa URL: solo ese host (y `10.0.2.2` en debug) puede usar HTTP;
+  cualquier otro tráfico sin cifrar queda bloqueado. Con HTTPS no se necesita excepción.
+- Si cambia tu IP (DHCP), actualiza `local.properties` y **vuelve a compilar**.
+- El teléfono y la PC deben estar en la misma red, y el cortafuegos debe permitir el puerto 8080.
+
+Detalle de pasos, pruebas y defectos: carpeta [`docs/sesion14/`](docs/sesion14/).

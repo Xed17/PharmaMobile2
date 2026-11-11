@@ -4,7 +4,6 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguro
 import pe.edu.upeu.pharmamobile2.data.local.AlmacenSeguroAndroid
@@ -22,12 +21,9 @@ import pe.edu.upeu.pharmamobile2.domain.port.NotificadorSincronizacion
 import pe.edu.upeu.pharmamobile2.domain.port.Telemetria
 import pe.edu.upeu.pharmamobile2.platform.MonitorConectividadAndroid
 
-import pe.edu.upeu.pharmamobile2.data.remote.ApiConfig
-
 actual val platformModule: Module = module {
     single<MonitorConectividad> { MonitorConectividadAndroid(androidContext()) }
     single<HttpClientEngine> { OkHttp.create() }
-    single(named("baseUrl")) { ApiConfig.URL_EMULADOR_ANDROID }
     single<Compartidor> { CompartidorAndroid(androidContext()) }
     single<AlmacenSeguro> { AlmacenSeguroAndroid(androidContext()) }
     single<CreadorDeDriver> { CreadorDeDriverAndroid(androidContext()) }
